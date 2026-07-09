@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <!-- Supabase Realtime JS Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choco Paradise | POS</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+  :root{
+    --choc-dark:#3a1f16;
+    --choc-mid:#6f4030;
+    --choc-accent:#d98e4a;
+    --choc-bg:#f7f1ec;
+  }
+  body{ background:var(--choc-bg); font-family:'Segoe UI',sans-serif; }
+  .app-shell{ display:flex; height:100vh; overflow:hidden; }
+
+  .topbar{
+    background:linear-gradient(135deg,var(--choc-dark),var(--choc-mid));
+    color:#fff; padding:.9rem 1.5rem;
+  }
+  .topbar h4{ margin:0; font-weight:700; letter-spacing:.5px; }
+
+  .main-col{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .product-area{ flex:1; overflow-y:auto; padding:1.2rem; }
+
+  .search-wrap{ padding:1rem 1.2rem 0; background:#fff; border-bottom:1px solid #eee; }
+
+  .product-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
+  .product-card{
+    background:#fff; border-radius:14px; overflow:hidden; cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,.06); transition:.15s transform, .15s box-shadow; border:1px solid #eee;
+  }
+  .product-card:hover{ transform:translateY(-3px); box-shadow:0 8px 18px rgba(58,31,22,.15); }
+  .product-card .img-wrap{ height:100px; background:#f1e6da; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .product-card img{ width:100%; height:100%; object-fit:cover; }
+  .product-card .body{ padding:.55rem .7rem; }
+  .product-card .pname{ font-size:.85rem; font-weight:600; color:var(--choc-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .product-card .pprice{ font-size:.8rem; color:var(--choc-mid); font-weight:700; }
+  .product-card .stock-badge{ font-size:.65rem; }
+  .product-card.out-of-stock{ opacity:.45; pointer-events:none; }
+
+  .sidebar-receipt{
+    width:400px; min-width:400px; background:#fff; display:flex; flex-direction:column;
+    border-left:1px solid #e5ddd4; box-shadow:-4px 0 14px rgba(0,0,0,.04);
+  }
+  .receipt-header{ background:var(--choc-dark); color:#fff; padding:1rem 1.2rem; }
+  .cart-items{ flex:1; overflow-y:auto; padding:.6rem 1rem; }
+  .cart-row{ display:flex; align-items:center; justify-content:space-between; padding:.55rem 0; border-bottom:1px dashed #e3d9cd; }
+  .cart-row .cname{ font-weight:600; font-size:.85rem; color:var(--choc-dark); }
+  .cart-row .cmeta{ font-size:.72rem; color:#8a7a6d; }
+  .qty-controls button{ width:24px; height:24px; padding:0; line-height:1; }
+  .empty-cart{ text-align:center; color:#b3a89c; padding:2.5rem 1rem; }
+
+  .totals-box{ background:#fbf6f1; border-top:1px solid #eee; padding:1rem 1.2rem; }
+  .totals-box .row-line{ display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:.35rem; }
+  .totals-box .grand-total{ font-size:1.4rem; font-weight:800; color:var(--choc-dark); }
+
+  .cash-input-group input{ font-size:1.1rem; font-weight:700; text-align:right; }
+  .change-display{ font-size:1.25rem; font-weight:800; }
+  .change-display.negative{ color:#c0392b; }
+  .change-display.positive{ color:#1e7e34; }
+
+  .btn-choco{ background:var(--choc-dark); border-color:var(--choc-dark); color:#fff; font-weight:700; }
+  .btn-choco:hover{ background:var(--choc-mid); border-color:var(--choc-mid); color:#fff; }
+
+  /* ---------- PRINT RECEIPT ---------- */
+  #printReceipt{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #printReceipt, #printReceipt *{ visibility:visible; }
+    #printReceipt{
+      display:block; position:absolute; top:0; left:0; width:78mm;
+      font-family:'Courier New',monospace; font-size:12px; color:#000; padding:4mm;
+    }
+    #printReceipt h4{ text-align:center; margin:0 0 2px; font-size:15px; }
+    #printReceipt .sub{ text-align:center; font-size:11px; margin-bottom:6px; }
+    #printReceipt table{ width:100%; border-collapse:collapse; }
+    #printReceipt td{ padding:1px 0; font-size:11px; }
+    #printReceipt hr{ border:none; border-top:1px dashed #000; margin:4px 0; }
+    #printReceipt .totals td{ font-weight:bold; }
+    @page{ margin:0; size:80mm auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="main-col">
+    
+    <div class="topbar d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="bi bi-cup-hot-fill"></i> Choco Paradise POS</h4>
+      <div class="d-flex align-items-center gap-3">
+        <a href="/admin/" target="_blank" class="btn btn-warning" style="font-weight: bold; border-radius: 20px; padding: 2px 12px; font-size: 12px; display: inline-flex; align-items: center; text-decoration: none;">
+          <i class="bi bi-gear-fill" style="margin-right: 4px;"></i> Admin
+        </a>
+        <span id="clock" class="small"></span>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="input-group mb-2">
+        <span class="input-group-text bg-dark text-white"><i class="bi bi-upc-scan"></i></span>
+        <input type="text" id="barcodeInput" class="form-control" placeholder="Scan barcode..." autocomplete="off" autofocus>
+        <span class="input-group-text" id="scanStatus"></span>
+      </div>
+      <input type="text" id="searchInput" class="form-control mb-2" placeholder="🔍 Search products...">
+    </div>
+
+    <div class="product-area">
+      <div class="product-grid" id="productGrid">
+        {% for p in products %}
+        <div class="product-card {% if p.stock <= 0 %}out-of-stock{% endif %}"
+             data-id="{{ p.id }}"
+             data-name="{{ p.name }}"
+             data-price="{{ p.selling_price }}"
+             data-stock="{{ p.stock }}"
+             data-barcode="{{ p.barcode|default:'' }}">
+          <div class="img-wrap">
+            {% if p.image %}
+              <img src="{{ p.image.url }}" alt="{{ p.name }}">
+            {% else %}
+              <i class="bi bi-image text-secondary fs-2"></i>
+            {% endif %}
+          </div>
+          <div class="body">
+            <div class="pname">{{ p.name }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span class="pprice">Rs. {{ p.selling_price }}</span>
+              <span class="badge bg-light text-dark stock-badge">{{ p.stock }} left</span>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No products available.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-receipt">
+    <div class="receipt-header d-flex justify-content-between align-items-center">
+      <div><i class="bi bi-receipt"></i> Current Order</div>
+      <button class="btn btn-sm btn-outline-light" id="clearCartBtn"><i class="bi bi-trash"></i></button>
+    </div>
+
+    <div class="cart-items" id="cartItems">
+      <div class="empty-cart" id="emptyCartMsg">
+        <i class="bi bi-cart-x fs-1"></i>
+        <p>Cart is empty</p>
+      </div>
+    </div>
+
+    <div class="totals-box">
+      <div class="row-line"><span>Items</span><span id="itemCount">0</span></div>
+      <div class="row-line grand-total"><span>Total</span><span>Rs. <span id="totalAmount">0.00</span></span></div>
+
+      <hr>
+
+      <div class="form-group mb-3" style="background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 5px solid #007bff;">
+        <label style="font-size: 14px; font-weight: bold; color: #2c3e50; display: block; margin-bottom: 5px;">
+          💰 දුන් මුදල (Cash Received):
+        </label>
+        <input type="number" id="cashReceived" class="form-control" style="font-size: 24px; font-weight: bold; color: #007bff; text-align: right; padding: 5px 15px;" placeholder="0.00">
+      </div>
+
+      <div class="balance-amount-box" style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 14px; font-weight: bold; color: #1b5e20;">
+          ↩️ ඉතිරි මුදල (Change):
+        </span>
+        <span id="changeAmount" style="font-size: 28px; font-weight: 900; color: #2e7d32; font-family: monospace;">
+            Rs. 0.00
+        </span>
+      </div>
+
+      <div id="checkoutError" class="text-danger small mt-1"></div>
+
+      <button class="btn btn-choco w-100 mt-2 py-2" id="checkoutBtn">
+        <i class="bi bi-printer-fill"></i> Checkout & Print
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="printReceipt">
+  <h4>CHOCO PARADISE</h4>
+  <div class="sub">Thank you for your order!</div>
+  <div class="sub" id="pr-meta"></div>
+  <hr>
+  <table>
+    <tbody id="pr-items"></tbody>
+  </table>
+  <hr>
+  <table class="totals">
+    <tr><td>Total</td><td style="text-align:right;" id="pr-total"></td></tr>
+    <tr><td>Cash</td><td style="text-align:right;" id="pr-cash"></td></tr>
+    <tr><td>Change</td><td style="text-align:right;" id="pr-change"></td></tr>
+  </table>
+  <hr>
+  <div class="sub">*** Visit Again ***</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function getCookie(name){
+  let value = null;
+  document.cookie.split(';').forEach(c=>{
+    c = c.trim();
+    if(c.startsWith(name+'=')) value = decodeURIComponent(c.substring(name.length+1));
+  });
+  return value;
+}
+const CSRF_TOKEN = getCookie('csrftoken');
+
+let cart = {};
+
+function fmt(n){ return Number(n).toFixed(2); }
+
+function renderCart(){
+  const container = document.getElementById('cartItems');
+  const keys = Object.keys(cart);
+  if(keys.length === 0){
+    container.innerHTML = `<div class="empty-cart" id="emptyCartMsg"><i class="bi bi-cart-x fs-1"></i><p>Cart is empty</p></div>`;
+  } else {
+    container.innerHTML = keys.map(id=>{
+      const item = cart[id];
+      return `
+        <div class="cart-row" data-id="${id}">
+          <div>
+            <div class="cname">${item.name}</div>
+            <div class="cmeta">Rs. ${fmt(item.price)} x ${item.qty} = Rs. ${fmt(item.price*item.qty)}</div>
+          </div>
+          <div class="qty-controls d-flex align-items-center gap-1">
+            <button class="btn btn-sm btn-outline-secondary" onclick="changeQty(${id},-1)">-</button>
+            <span>${item.qty}</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="changeQty(${id},1)">+</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="removeItem(${id})"><i class="bi bi-x"></i></button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  let total = 0, count = 0;
+  keys.forEach(id=>{ total += cart[id].price * cart[id].qty; count += cart[id].qty; });
+  document.getElementById('itemCount').innerText = count;
+  document.getElementById('totalAmount').innerText = fmt(total);
+  calcChange();
+}
+
+function addToCart(id, name, price, stock){
+  if(stock <= 0) return;
+  if(!cart[id]) cart[id] = { name, price: parseFloat(price), qty: 0, stock: parseInt(stock) };
+  if(cart[id].qty < cart[id].stock){ cart[id].qty += 1; }
+  renderCart();
+}
+
+function changeQty(id, delta){
+  if(!cart[id]) return;
+  cart[id].qty += delta;
+  if(cart[id].qty <= 0) delete cart[id];
+  else if(cart[id].qty > cart[id].stock) cart[id].qty = cart[id].stock;
+  renderCart();
+}
+
+function removeItem(id){ delete cart[id]; renderCart(); }
+
+function getTotal(){
+  return Object.values(cart).reduce((s,i)=> s + i.price*i.qty, 0);
+}
+
+function calcChange(){
+  const total = getTotal();
+  const cash = parseFloat(document.getElementById('cashReceived').value) || 0;
+  const change = cash - total;
+  const el = document.getElementById('changeAmount');
+  if(el){
+    el.innerText = 'Rs. ' + fmt(Math.abs(change));
+    el.classList.remove('positive','negative');
+    el.classList.add(change < 0 ? 'negative' : 'positive');
+  }
+}
+
+document.getElementById('cashReceived').addEventListener('input', calcChange);
+
+document.getElementById('clearCartBtn').addEventListener('click', ()=>{
+  cart = {};
+  document.getElementById('cashReceived').value = '';
+  renderCart();
+  const el = document.getElementById('changeAmount');
+  if(el) el.innerText = 'Rs. 0.00';
+});
+
+document.querySelectorAll('.product-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    addToCart(
+      card.dataset.id,
+      card.dataset.name,
+      card.dataset.price,
+      card.dataset.stock
+    );
+  });
+});
+
+const barcodeInput = document.getElementById('barcodeInput');
+const scanStatus = document.getElementById('scanStatus');
+
+function flashScanStatus(icon, cls){
+  scanStatus.innerHTML = `<i class="bi ${icon} ${cls}"></i>`;
+  setTimeout(()=>{ scanStatus.innerHTML = ''; }, 1200);
+}
+
+async function handleBarcodeScan(code){
+  code = code.trim();
+  if(!code) return;
+
+  const localCard = document.querySelector(`.product-card[data-barcode="${CSS.escape(code)}"]`);
+  if(localCard){
+    if(localCard.classList.contains('out-of-stock')){
+      flashScanStatus('bi-x-circle-fill', 'text-danger');
+      return;
+    }
+    addToCart(localCard.dataset.id, localCard.dataset.name, localCard.dataset.price, localCard.dataset.stock);
+    flashScanStatus('bi-check-circle-fill', 'text-success');
+    return;
+  }
+
+  try{
+    const res = await fetch(`{% url 'barcode_lookup_api' %}?code=${encodeURIComponent(code)}`);
+    const data = await res.json();
+    if(data.success){
+      const p = data.product;
+      if(p.stock <= 0){
+        flashScanStatus('bi-x-circle-fill', 'text-danger');
+        return;
+      }
+      addToCart(p.id, p.name, p.price, p.stock);
+      flashScanStatus('bi-check-circle-fill', 'text-success');
+    } else {
+      flashScanStatus('bi-exclamation-triangle-fill', 'text-warning');
+    }
+  }catch(err){
+    flashScanStatus('bi-exclamation-triangle-fill', 'text-warning');
+  }
+}
+
+barcodeInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    handleBarcodeScan(barcodeInput.value);
+    barcodeInput.value = '';
+  }
+});
+
+function refocusBarcodeInput(){
+  const activeId = document.activeElement.id;
+  if(activeId !== 'cashReceived' && activeId !== 'searchInput'){
+    barcodeInput.focus();
+  }
+}
+document.addEventListener('click', refocusBarcodeInput);
+window.addEventListener('load', ()=> barcodeInput.focus());
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('.product-card').forEach(card=>{
+    card.style.display = card.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+document.getElementById('checkoutBtn').addEventListener('click', async ()=>{
+  const errBox = document.getElementById('checkoutError');
+  errBox.innerText = '';
+
+  const total = getTotal();
+  const cash = parseFloat(document.getElementById('cashReceived').value) || 0;
+
+  if(Object.keys(cart).length === 0){ errBox.innerText = 'Cart is empty.'; return; }
+  if(cash < total){ errBox.innerText = 'Cash received is less than total amount.'; return; }
+
+  const payload = {
+    cart: Object.entries(cart).map(([id,item])=>({ id: parseInt(id), qty: item.qty })),
+    cash_received: cash
+  };
+
+  try{
+    const res = await fetch("{% url 'checkout_api' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': CSRF_TOKEN
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if(!data.success){ errBox.innerText = data.error || 'Checkout failed.'; return; }
+
+    printReceipt(data);
+
+    // 🔄 Auto Update Stock Layout Without Refresh
+    Object.keys(cart).forEach(id => {
+      const card = document.querySelector(`.product-card[data-id="${id}"]`);
+      if (card) {
+        let oldStock = parseInt(card.dataset.stock) || 0;
+        let soldQty = cart[id].qty;
+        let newStock = oldStock - soldQty;
+        card.dataset.stock = newStock;
+        const badge = card.querySelector('.stock-badge');
+        if (badge) badge.innerText = `${newStock} left`;
+        if (newStock <= 0) card.classList.add('out-of-stock');
+      }
+    });
+
+    cart = {};
+    document.getElementById('cashReceived').value = '';
+    if(document.getElementById('changeAmount')) document.getElementById('changeAmount').innerText = 'Rs. 0.00';
+    renderCart();
+
+  }catch(err){
+    errBox.innerText = 'Network error. Please try again.';
+  }
+});
+
+function printReceipt(data){
+  document.getElementById('pr-meta').innerText = `#${data.order_number} | ${data.timestamp}`;
+  document.getElementById('pr-items').innerHTML = data.items.map(it=>`
+    <tr>
+      <td colspan="2">${it.name}</td>
+    </tr>
+    <tr>
+      <td>${it.qty} x ${fmt(it.unit_price)}</td>
+      <td style="text-align:right;">${fmt(it.subtotal)}</td>
+    </tr>`).join('');
+  document.getElementById('pr-total').innerText = 'Rs. ' + fmt(data.total_amount);
+  document.getElementById('pr-cash').innerText = 'Rs. ' + fmt(data.cash_received);
+  document.getElementById('pr-change').innerText = 'Rs. ' + fmt(data.change_given);
+
+  window.print();
+}
+
+function updateClock(){
+  document.getElementById('clock').innerText = new Date().toLocaleString('en-GB');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+renderCart();
+async function updateLiveStockRealtime() {
+  try {
+    // ⏰ හැම තත්පරයකටම අලුත්ම දත්ත ගන්න ලින්ක් එක අගට Timestamp එකක් එකතු කරනවා (No Cache)
+    const res = await fetch("/api/live-stock/?_nocache=" + new Date().getTime());
+    const data = await res.json();
+    
+    if (data.success && data.stocks) {
+      data.stocks.forEach(p => {
+        const card = document.querySelector(`.product-card[data-id="${p.id}"]`);
+        
+        if (card) {
+          // 1. HTML data attribute එක අප්ඩේට් කරනවා
+          card.dataset.stock = p.stock;
+          
+          // 2. පිටුවේ පෙනෙන Badge එකේ අගය වෙනස් කරනවා
+          const badge = card.querySelector('.stock-badge') || card.querySelector('.badge') || card.querySelector('span');
+          if (badge) {
+            badge.innerText = `${p.stock} left`;
+          }
+          
+          // 3. ස්ටොක් එක ඉවර වුණොත් කාඩ් එක අඳුරු කරනවා
+          if (parseInt(p.stock) <= 0) {
+            card.classList.add('out-of-stock');
+          } else {
+            card.classList.remove('out-of-stock');
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.log("Live stock polling failed:", err);
+  }
+}
+
+// ⚡ ⚡ හැම තත්පර 1කටම වරක් (1000ms) පසුබිමෙන් ක්ෂණිකව දුවනවා
+setInterval(updateLiveStockRealtime, 1000);
+</script>
+</body>
+</html>

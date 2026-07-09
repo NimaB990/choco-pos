@@ -1,0 +1,5 @@
+{% extends "admin/change_list.html" %}
+{% block object-tools %}
+    {{ today_summary_block|safe }}
+    {{ block.super }}
+{% endblock %}

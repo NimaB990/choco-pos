@@ -1,0 +1,174 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}" style="font-family: 'Segoe UI', Arial, sans-serif; font-weight: bold; color: #fff !important;">
+        🍫 Choco Paradise Admin
+    </a>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+    <a href="/" target="_blank" class="pos-nav-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Go to POS Page
+    </a>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* =======================================================
+       ✨ ULTIMATE HIGH-CONTRAST LIGHT THEME (BYPASS ALL DARK BLOCKS)
+       ======================================================= */
+    
+    /* 1. ප්‍රධාන පසුබිම */
+    body, #content {
+        background: #fdfdfd !important;
+        font-family: 'Segoe UI', -apple-system, sans-serif !important;
+        color: #000000 !important;
+    }
+
+    /* Top Navigation Bar */
+    #header {
+        background: #2b1810 !important;
+        border-bottom: 3px solid #d98e4a !important;
+        padding: 12px 20px !important;
+    }
+
+    .pos-nav-btn {
+        background: #d98e4a !important; color: #fff !important;
+        padding: 6px 14px !important; border-radius: 20px !important;
+        font-weight: bold !important; text-decoration: none !important;
+        font-size: 12px !important; display: inline-flex !important; align-items: center !important;
+    }
+
+    .breadcrumbs { background: #3a2218 !important; color: #fff !important; padding: 10px 20px !important; font-size: 12px !important; }
+    .breadcrumbs a { color: #fcc99b !important; }
+
+    /* Left Sidebar Menu */
+    div.modules h2, .module h2, .section h2 {
+        background: #4a2f24 !important; color: #fff !important;
+        font-size: 13px !important; font-weight: 700 !important; padding: 10px 15px !important;
+    }
+    .module { background: #fff !important; border: 1px solid #dee2e6 !important; border-radius: 8px !important; overflow: hidden; margin-bottom: 20px !important; }
+
+    /* =======================================================
+       📊 THE MAIN CHANGELIST PANEL
+       ======================================================= */
+    #changelist {
+        background: #ffffff !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+    }
+
+    /* 🔍 SEARCH BAR (කළු පාට බලෙන්ම ඉවත් කර 100% සුදු කරන ලදී) */
+    #changelist-search { 
+        background: #ffffff !important; 
+        border: none !important; 
+        padding: 15px !important;
+        border-radius: 8px !important;
+        margin-bottom: 15px !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    #changelist-search form input[type="text"], 
+    #changelist-search input[type="text"],
+    #searchbar {
+        background-color: #ffffff !important; 
+        color: #000000 !important; 
+        border: 2px solid #0056b3 !important; /* කැපී පෙනෙන නිල් බෝඩර් එකක් */
+        border-radius: 6px !important;
+        padding: 8px 15px !important; 
+        font-size: 15px !important; 
+        font-weight: 700 !important;
+        width: 400px !important;
+        display: inline-block !important;
+    }
+    
+    #changelist-search input[type="submit"] {
+        background: #0056b3 !important; 
+        color: #fff !important;
+        border-radius: 6px !important; 
+        padding: 9px 20px !important; 
+        border: none !important; 
+        font-weight: bold !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        margin-left: 10px !important;
+    }
+
+    /* 🎬 ACTIONS BAR */
+    .actions {
+        background: #f8f9fa !important; 
+        border: 1px solid #ced4da !important;
+        border-radius: 6px !important; 
+        padding: 12px !important; 
+        margin-bottom: 15px !important; 
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    .actions select {
+        border: 2px solid #ced4da !important;
+        padding: 6px !important;
+        border-radius: 4px !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        background: #fff !important;
+    }
+
+    /* 🟢 TABLE HEADERS */
+    #result_list th {
+        background: #0056b3 !important; /* Headers ටික ලස්සන තද නිල් පාටක් කළා */
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        padding: 14px 10px !important;
+        text-align: center !important;
+    }
+    #result_list th .text a, #result_list th a { color: #ffffff !important; }
+
+    /* 🟢 TABLE ROWS (100% පිරිසිදු සුදු පසුබිම සහ තද කළු අකුරු) */
+    #result_list tbody tr, 
+    #result_list tr.row1, 
+    #result_list tr.row2 { 
+        background: #ffffff !important; 
+    }
+    
+    #result_list tr:hover { 
+        background: #f1f7fe !important; /* Hover කරද්දී ලස්සන නිල් පාටක් */
+    }
+
+    #result_list td {
+        color: #000000 !important; /* උපරිම තද කළු අකුරු */
+        font-weight: 700 !important; /* හොඳින් කියවන්න පුළුවන් වෙන්න බෝල්ඩ් */
+        font-size: 14px !important;
+        padding: 15px 10px !important;
+        border-bottom: 2px solid #dee2e6 !important; /* පේළි වෙන් කරලා පේන බෝඩර්ස් */
+        text-align: center !important;
+        background: #ffffff !important;
+    }
+
+    /* භාණ්ඩයේ නම පෙන්වන ලින්ක් එක */
+    #result_list td.field-name a, #result_list td a {
+        color: #0056b3 !important; 
+        font-weight: 800 !important;
+        text-decoration: underline !important;
+    }
+
+    /* 6. Filter Panel */
+    #changelist-filter { background: #ffffff !important; border-left: 2px solid #ced4da !important; padding: 15px !important; }
+    #changelist-filter h2 { background: #3a2218 !important; color: #fff !important; border-radius: 4px !important; padding: 6px 10px !important; font-size: 12px !important; }
+    #changelist-filter h3 { color: #000 !important; font-weight: 700 !important; font-size: 13px !important; }
+    #changelist-filter ul li.selected a { border-left: 4px solid #0056b3 !important; padding-left: 6px !important; color: #0056b3 !important; font-weight: bold !important; }
+    #changelist-filter a { color: #495057 !important; font-size: 13px; font-weight: 600; }
+
+    /* Green Add Button */
+    .object-tools a.addlink { background: #28a745 !important; color: #fff !important; border-radius: 6px !important; font-weight: bold !important; padding: 10px 20px !important; }
+    .object-tools a.addlink:hover { background: #218838 !important; }
+</style>
+{% endblock %}
