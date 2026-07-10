@@ -74,12 +74,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
-        'USER': 'postgres',
+        'USER': 'postgres.gvucbxvqyhirsvhpqrtt',
         'PASSWORD': 'Nima@2001044022',
         # 🇮🇳 ඔයාගේ මුම්බායි සර්වර් එකේ සජීවී නිල හොස්ට් එක
-        'HOST': 'db.gvucbxvqyhirsvhpqrtt.supabase.co', 
+        'HOST': 'aws-1-ap-south-1.pooler.supabase.com', 
         # ⚡ කිසිම ටෙනන්ට් බග් එකක් නැති ඍජු පෝට් එක
-        'PORT': '5432', 
+        'PORT': '6543', 
     }
 }
 
