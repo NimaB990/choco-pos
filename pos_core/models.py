@@ -81,7 +81,13 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE, verbose_name="ඇණවුම")
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name="චොකලට් වර්ගය")
+    
+    # 1. ඩේටාබේස් එකේ නැති Custom item සේව් කරන්න පුළුවන් වෙන්න null සහ blank එකතු කළා
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="චොකලට් වර්ගය")
+    
+    # 2. අතින් ටයිප් කරන නම සේව් වෙන්න අලුත් field එකක් දැම්මා
+    custom_name = models.CharField(max_length=150, blank=True, null=True, verbose_name="අතින් ඇතුළත් කළ නම")
+    
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)], verbose_name="ප්‍රමාණය")
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="ඒකක මිල")
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="ඒකක පිරිවැය")
@@ -96,5 +102,12 @@ class OrderItem(models.Model):
     def subtotal(self):
         return self.unit_price * self.quantity
 
+    # 3. ප්‍රින්ට් වලට සහ UI එකට නම ලස්සනට ගන්න හදපු property එක
+    @property
+    def item_name(self):
+        if self.product:
+            return self.product.name
+        return self.custom_name or "නමක් නොමැති භාණ්ඩයක්"
+
     def __str__(self):
-        return f"{str(self.product.name)} x {str(self.quantity)}"
+        return f"{str(self.item_name)} x {str(self.quantity)}"

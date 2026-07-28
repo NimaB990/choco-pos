@@ -64,6 +64,10 @@ def checkout_api(request):
         payload = json.loads(request.body)
         cart = payload.get('cart', [])
         cash_received = Decimal(str(payload.get('cash_received', 0)))
+        
+        # 📉 Frontend එකෙන් එවන Discount දත්ත කියවා ගැනීම
+        discount_value = Decimal(str(payload.get('discount_value', 0)))
+        discount_type = payload.get('discount_type', 'cash')
 
         if not cart:
             return JsonResponse({'success': False, 'error': 'Cart is empty.'}, status=400)
@@ -73,56 +77,97 @@ def checkout_api(request):
         order_items = []
 
         for item in cart:
-            product = Product.objects.select_for_update().get(id=item['id'])
             qty = int(item['qty'])
-
             if qty <= 0:
-                return JsonResponse({'success': False, 'error': f'Invalid quantity for {product.name}.'}, status=400)
-            if product.stock < qty:
-                return JsonResponse({'success': False, 'error': f'Insufficient stock for {product.name}.'}, status=400)
+                return JsonResponse({'success': False, 'error': 'Invalid quantity.'}, status=400)
 
-            subtotal = product.selling_price * qty
-            total_amount += subtotal
-            total_cost += product.cost_price * qty
+            if item.get('is_custom'):
+                # ➕ අතින් ඇතුළත් කළ භාණ්ඩයක් නම් (Custom Item)
+                c_name = item.get('name', 'Custom Item')
+                c_price = Decimal(str(item.get('price', 0)))
+                c_cost = c_price  # Custom භාණ්ඩ සඳහා පිරිවැය සහ විකුණුම් මිල සමාන කළා
 
-            order_items.append((product, qty))
+                total_amount += c_price * qty
+                total_cost += c_cost * qty
 
-        if cash_received < total_amount:
+                order_items.append((None, c_name, c_price, c_cost, qty))
+            else:
+                # 🍫 ඩේටාබේස් එකේ පවතින සාමාන්‍ය නිෂ්පාදනයක් නම්
+                product = Product.objects.select_for_update().get(id=int(item['id']))
+                
+                if product.stock < qty:
+                    return JsonResponse({'success': False, 'error': f'Insufficient stock for {product.name}.'}, status=400)
+
+                subtotal = product.selling_price * qty
+                total_amount += subtotal
+                total_cost += product.cost_price * qty
+
+                order_items.append((product, None, product.selling_price, product.cost_price, qty))
+
+        # 📉 සර්වර් එක ඇතුළතදී වට්ටම (Discount) ගණනය කිරීම
+        discount_amount = Decimal('0')
+        if discount_type == 'percent':
+            discount_amount = (total_amount * discount_value) / Decimal('100')
+        else:
+            discount_amount = discount_value
+
+        # වට්ටම මුළු එකතුවට වඩා වැඩි විය නොහැක
+        if discount_amount > total_amount:
+            discount_amount = total_amount
+
+        # බිලේ නෙට් එකතුව (Net Total) සකස් කිරීම
+        net_total_amount = total_amount - discount_amount
+
+        if cash_received < net_total_amount:
             return JsonResponse({'success': False, 'error': 'Cash received is less than total amount.'}, status=400)
 
-        change_given = cash_received - total_amount
+        change_given = cash_received - net_total_amount
 
+        # Order Record එක සෑදීම
         order = Order.objects.create(
-            total_amount=total_amount,
+            total_amount=net_total_amount,
             total_cost=total_cost,
             cash_received=cash_received,
             change_given=change_given,
         )
 
-        for product, qty in order_items:
+        # Order Items ටේබල් එකට දත්ත ඇතුළත් කිරීම සහ ස්ටොක් අඩු කිරීම
+        response_items = []
+        for product, custom_name, unit_price, unit_cost, qty in order_items:
             OrderItem.objects.create(
                 order=order,
                 product=product,
+                custom_name=custom_name,
                 quantity=qty,
-                unit_price=product.selling_price,
-                unit_cost=product.cost_price,
+                unit_price=unit_price,
+                unit_cost=unit_cost,
             )
-            product.stock -= qty
-            product.save(update_fields=['stock'])
+            
+            if product:
+                product.stock -= qty
+                product.save(update_fields=['stock'])
+                display_name = product.name
+            else:
+                display_name = custom_name
 
+            response_items.append({
+                'name': display_name,
+                'qty': qty,
+                'unit_price': float(unit_price),
+                'subtotal': float(unit_price * qty),
+            })
+
+        # ⚡ මෙතනට 'gross_total' සහ 'discount_amount' එකතු කළා, එවිට Frontend (JavaScript) එකට රිසිට් එක සිංහලෙන් ප්‍රින්ට් කරන්න ලේසියි.
         return JsonResponse({
             'success': True,
             'order_number': order.order_number,
-            'total_amount': float(total_amount),
+            'gross_total': float(total_amount),
+            'discount_amount': float(discount_amount),
+            'total_amount': float(net_total_amount),
             'cash_received': float(cash_received),
             'change_given': float(change_given),
             'timestamp': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'items': [{
-                'name': p.name,
-                'qty': q,
-                'unit_price': float(p.selling_price),
-                'subtotal': float(p.selling_price * q),
-            } for p, q in order_items],
+            'items': response_items,
         })
 
     except Product.DoesNotExist:
@@ -132,25 +177,19 @@ def checkout_api(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-from django.http import JsonResponse
-from .models import Product
 
-from django.http import JsonResponse
-from .models import Product
-
+@require_GET
 def get_live_stock_api(request):
     try:
-        # ⚡ හැම ප්‍රොඩක්ට් එකකම අලුත්ම ස්ටොක් ගණන් ටික ගන්නවා
         products = Product.objects.all()
         stock_list = []
         
         for p in products:
             stock_list.append({
                 'id': p.id,
-                'stock': p.stock  # ⚠️ ඔයාගේ Product model එකේ stock පෙන්වන field එකේ නම 'stock' ම නේද කියලා ෂුවර් කරගන්න!
+                'stock': p.stock
             })
             
         return JsonResponse({'success': True, 'stocks': stock_list})
     except Exception as e:
-        # 🐛 මොකක් හරි අවුලක් ආවොත් සර්වර් එක crash වෙන්නේ නැතුව error එක පෙන්වනවා
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

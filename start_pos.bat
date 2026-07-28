@@ -20,9 +20,6 @@ call ".venv\Scripts\activate.bat"
 echo Installing dependencies...
 python -m pip install -q -r requirements.txt
 
-echo Running migrations...
-python manage.py migrate
-
 echo.
 echo ========================================
 echo  POS System Starting...
@@ -35,6 +32,9 @@ echo.
 echo Press Ctrl+C to stop the server.
 echo ========================================
 echo.
+
+:: මෙන්න මේ කමාන්ඩ් එකෙන් Chrome එක හරහා POS එක ඔටෝම ඕපන් වෙනවා!
+start "" "http://localhost:8000"
 
 python manage.py runserver
 
