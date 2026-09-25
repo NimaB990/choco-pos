@@ -9,75 +9,776 @@
 <title>Choco Paradise | POS</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --choc-dark:#3a1f16;
-    --choc-mid:#6f4030;
-    --choc-accent:#d98e4a;
-    --choc-bg:#f7f1ec;
+  /* ═══════════════════════════════════════════════
+     DESIGN TOKENS  — Choco Paradise Brand
+  ════════════════════════════════════════════════ */
+  :root {
+    --choc-espresso:  #1a0a04;
+    --choc-dark:      #2d1209;
+    --choc-rich:      #4a1e0e;
+    --choc-mid:       #7a4428;
+    --choc-warm:      #a0603a;
+    --choc-accent:    #e8963c;
+    --choc-gold:      #f5c842;
+    --choc-cream:     #fdf6ee;
+    --choc-light:     #f5ece2;
+    --choc-muted:     #c4a882;
+
+    --sidebar-w: 420px;
+    --radius-xl: 20px;
+    --radius-lg: 14px;
+    --radius-md: 10px;
+    --shadow-card: 0 4px 20px rgba(45,18,9,.10);
+    --shadow-hover: 0 12px 36px rgba(45,18,9,.22);
+    --shadow-deep:  0 8px 32px rgba(45,18,9,.25);
+
+    --transition: .2s cubic-bezier(.4,0,.2,1);
   }
-  body{ background:var(--choc-bg); font-family:'Segoe UI',sans-serif; }
-  .app-shell{ display:flex; height:100vh; overflow:hidden; }
 
-  .topbar{
-    background:linear-gradient(135deg,var(--choc-dark),var(--choc-mid));
-    color:#fff; padding:.9rem 1.5rem;
+  /* ── Reset / Base ── */
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--choc-cream);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: var(--choc-dark);
+    overflow: hidden;
   }
-  .topbar h4{ margin:0; font-weight:700; letter-spacing:.5px; }
 
-  .main-col{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
-  .product-area{ flex:1; overflow-y:auto; padding:1.2rem; }
-
-  .search-wrap{ padding:1rem 1.2rem 0; background:#fff; border-bottom:1px solid #eee; }
-
-  .product-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
-  .product-card{
-    background:#fff; border-radius:14px; overflow:hidden; cursor:pointer;
-    box-shadow:0 2px 8px rgba(0,0,0,.06); transition:.15s transform, .15s box-shadow; border:1px solid #eee;
+  /* ════════════════════════════════════════════════
+     APP SHELL
+  ════════════════════════════════════════════════ */
+  .app-shell {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--choc-cream);
   }
-  .product-card:hover{ transform:translateY(-3px); box-shadow:0 8px 18px rgba(58,31,22,.15); }
-  .product-card .img-wrap{ height:100px; background:#f1e6da; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-  .product-card img{ width:100%; height:100%; object-fit:cover; }
-  .product-card .body{ padding:.55rem .7rem; }
-  .product-card .pname{ font-size:.85rem; font-weight:600; color:var(--choc-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .product-card .pprice{ font-size:.8rem; color:var(--choc-mid); font-weight:700; }
-  .product-card .stock-badge{ font-size:.65rem; }
-  .product-card.out-of-stock{ opacity:.45; pointer-events:none; }
 
-  .sidebar-receipt{
-    width:400px; min-width:400px; background:#fff; display:flex; flex-direction:column;
-    border-left:1px solid #e5ddd4; box-shadow:-4px 0 14px rgba(0,0,0,.04);
+  /* ════════════════════════════════════════════════
+     TOP BAR
+  ════════════════════════════════════════════════ */
+  .topbar {
+    background: linear-gradient(135deg, var(--choc-espresso) 0%, var(--choc-rich) 60%, var(--choc-mid) 100%);
+    color: #fff;
+    padding: .85rem 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 16px rgba(26,10,4,.45);
+    position: relative;
+    z-index: 10;
   }
-  .receipt-header{ background:var(--choc-dark); color:#fff; padding:1rem 1.2rem; }
-  .cart-items{ flex:1; overflow-y:auto; padding:.6rem 1rem; }
-  .cart-row{ display:flex; align-items:center; justify-content:space-between; padding:.55rem 0; border-bottom:1px dashed #e3d9cd; }
-  .cart-row .cname{ font-weight:600; font-size:.85rem; color:var(--choc-dark); }
-  .cart-row .cmeta{ font-size:.72rem; color:#8a7a6d; }
-  .qty-controls button{ width:24px; height:24px; padding:0; line-height:1; }
-  .empty-cart{ text-align:center; color:#b3a89c; padding:2.5rem 1rem; }
+  .topbar::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--choc-accent), var(--choc-gold), var(--choc-accent), transparent);
+  }
 
-  .totals-box{ background:#fbf6f1; border-top:1px solid #eee; padding:1rem 1.2rem; }
-  .totals-box .row-line{ display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:.35rem; }
-  .totals-box .grand-total{ font-size:1.4rem; font-weight:800; color:var(--choc-dark); }
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+  }
+  .brand-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--choc-accent), var(--choc-gold));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 12px rgba(232,150,60,.5);
+  }
+  .brand-text h4 {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: .3px;
+    line-height: 1.1;
+  }
+  .brand-text span {
+    font-size: .65rem;
+    color: var(--choc-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
 
-  .cash-input-group input{ font-size:1.1rem; font-weight:700; text-align:right; }
-  .change-display{ font-size:1.25rem; font-weight:800; }
-  .change-display.negative{ color:#c0392b; }
-  .change-display.positive{ color:#1e7e34; }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+  }
+  .clock-badge {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.15);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: .35rem .9rem;
+    font-size: .78rem;
+    font-weight: 500;
+    color: rgba(255,255,255,.9);
+    letter-spacing: .5px;
+  }
+  .btn-admin {
+    background: linear-gradient(135deg, var(--choc-accent), var(--choc-gold));
+    border: none;
+    color: var(--choc-dark);
+    font-weight: 700;
+    font-size: .78rem;
+    border-radius: 20px;
+    padding: .4rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 3px 10px rgba(232,150,60,.4);
+  }
+  .btn-admin:hover {
+    background: linear-gradient(135deg, var(--choc-gold), var(--choc-accent));
+    color: var(--choc-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(232,150,60,.55);
+  }
 
-  .btn-choco{ background:var(--choc-dark); border-color:var(--choc-dark); color:#fff; font-weight:700; }
-  .btn-choco:hover{ background:var(--choc-mid); border-color:var(--choc-mid); color:#fff; }
+  /* ════════════════════════════════════════════════
+     MAIN COLUMN (left side)
+  ════════════════════════════════════════════════ */
+  .main-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
 
-  /* ---------- PRINT RECEIPT ---------- */
-  #printReceipt { display:none; }
+  /* ── Search / Input zone ── */
+  .search-zone {
+    padding: 1rem 1.4rem .8rem;
+    background: #fff;
+    border-bottom: 1px solid #ede5da;
+    box-shadow: 0 2px 12px rgba(45,18,9,.05);
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .7rem;
+    margin-bottom: .7rem;
+  }
+
+  .field-group {
+    position: relative;
+  }
+  .field-group .fi-icon {
+    position: absolute;
+    left: .85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--choc-warm);
+    font-size: 1rem;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .field-group input {
+    width: 100%;
+    padding: .62rem .9rem .62rem 2.4rem;
+    border: 1.5px solid #e0d4c5;
+    border-radius: var(--radius-md);
+    font-size: .88rem;
+    background: var(--choc-cream);
+    color: var(--choc-dark);
+    transition: var(--transition);
+    outline: none;
+  }
+  .field-group input:focus {
+    border-color: var(--choc-accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(232,150,60,.18);
+  }
+  .field-group input::placeholder { color: #bba98e; }
+
+  #scanStatus {
+    position: absolute;
+    right: .8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+  }
+
+  /* Custom item card */
+  .custom-item-card {
+    background: linear-gradient(135deg, #fffbf3, #fff8ec);
+    border: 1.5px dashed var(--choc-accent);
+    border-radius: var(--radius-lg);
+    padding: .65rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .custom-item-card input {
+    border: 1.5px solid #e0d4c5;
+    border-radius: var(--radius-md);
+    padding: .45rem .8rem;
+    font-size: .82rem;
+    background: #fff;
+    outline: none;
+    transition: var(--transition);
+  }
+  .custom-item-card input:focus {
+    border-color: var(--choc-accent);
+    box-shadow: 0 0 0 3px rgba(232,150,60,.15);
+  }
+  .custom-item-card input::placeholder { color: #bba98e; }
+  .custom-item-card .name-input { flex: 2; }
+  .custom-item-card .price-input { flex: 1; }
+  .btn-add-custom {
+    background: linear-gradient(135deg, var(--choc-rich), var(--choc-mid));
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: .8rem;
+    border-radius: var(--radius-md);
+    padding: .46rem .9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    white-space: nowrap;
+    transition: var(--transition);
+    cursor: pointer;
+  }
+  .btn-add-custom:hover {
+    background: linear-gradient(135deg, var(--choc-mid), var(--choc-warm));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(74,30,14,.35);
+  }
+
+  /* ── Product grid ── */
+  .product-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.1rem 1.4rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--choc-muted) transparent;
+  }
+  .product-area::-webkit-scrollbar { width: 5px; }
+  .product-area::-webkit-scrollbar-thumb {
+    background: var(--choc-muted);
+    border-radius: 10px;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 14px;
+  }
+
+  .product-card {
+    background: #fff;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+    border: 1.5px solid #ede5da;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    position: relative;
+  }
+  .product-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(232,150,60,.06), transparent);
+    opacity: 0;
+    transition: opacity var(--transition);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .product-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--choc-accent);
+  }
+  .product-card:hover::before { opacity: 1; }
+  .product-card:active { transform: translateY(-1px) scale(1.00); }
+
+  .img-wrap {
+    height: 105px;
+    background: linear-gradient(135deg, var(--choc-light), #ede0d0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+  }
+  .product-card:hover .img-wrap img { transform: scale(1.06); }
+  .img-placeholder-icon {
+    font-size: 2.4rem;
+    color: var(--choc-muted);
+    opacity: .5;
+  }
+
+  .card-body-inner {
+    padding: .6rem .8rem .75rem;
+  }
+  .pname {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--choc-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: .3rem;
+    letter-spacing: .1px;
+  }
+  .price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .2rem;
+  }
+  .pprice {
+    font-size: .85rem;
+    font-weight: 800;
+    color: var(--choc-rich);
+  }
+  .stock-pill {
+    font-size: .6rem;
+    font-weight: 700;
+    padding: .15rem .45rem;
+    border-radius: 20px;
+    letter-spacing: .3px;
+    background: #f0f9f0;
+    color: #2d7a3a;
+    border: 1px solid #b8e6bf;
+  }
+  .stock-pill.low {
+    background: #fff8e1;
+    color: #b07800;
+    border-color: #ffd54f;
+  }
+  .stock-pill.out {
+    background: #fde8e8;
+    color: #c0392b;
+    border-color: #f5b7b1;
+  }
+
+  .product-card.out-of-stock {
+    opacity: .45;
+    pointer-events: none;
+  }
+  /* quick-add tap ripple */
+  .card-add-btn {
+    position: absolute;
+    bottom: .55rem;
+    right: .6rem;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--choc-accent);
+    border: none;
+    color: #fff;
+    font-size: .85rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(.7);
+    transition: opacity var(--transition), transform var(--transition);
+    z-index: 5;
+    box-shadow: 0 2px 8px rgba(232,150,60,.5);
+  }
+  .product-card:hover .card-add-btn {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* empty state */
+  .empty-grid {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--choc-muted);
+  }
+  .empty-grid i { font-size: 3rem; display: block; margin-bottom: .5rem; }
+
+  /* ════════════════════════════════════════════════
+     SIDEBAR — RECEIPT PANEL
+  ════════════════════════════════════════════════ */
+  .sidebar-receipt {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #e8ddd1;
+    box-shadow: -6px 0 30px rgba(45,18,9,.07);
+  }
+
+  .receipt-header {
+    background: linear-gradient(135deg, var(--choc-espresso), var(--choc-rich));
+    color: #fff;
+    padding: 1rem 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .receipt-header-left {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .receipt-header-left .rh-icon {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,.12);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+  .receipt-header-left h6 {
+    margin: 0;
+    font-weight: 700;
+    font-size: .92rem;
+  }
+  .receipt-header-left small {
+    color: var(--choc-muted);
+    font-size: .68rem;
+  }
+  .btn-clear-cart {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+    color: rgba(255,255,255,.85);
+    border-radius: 10px;
+    padding: .4rem .65rem;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex; align-items: center; gap: .25rem;
+  }
+  .btn-clear-cart:hover {
+    background: rgba(220,50,50,.3);
+    border-color: rgba(220,50,50,.5);
+    color: #fff;
+  }
+
+  /* cart items */
+  .cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: .4rem .8rem;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+  }
+  .cart-items::-webkit-scrollbar { width: 4px; }
+  .cart-items::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+
+  .empty-cart {
+    text-align: center;
+    color: var(--choc-muted);
+    padding: 3rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+  }
+  .empty-cart i { font-size: 3.5rem; opacity: .4; }
+  .empty-cart p { margin: 0; font-size: .88rem; font-weight: 500; }
+
+  .cart-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .7rem .5rem;
+    border-bottom: 1px solid #f0e8de;
+    gap: .5rem;
+    animation: slideIn .15s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(6px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .cart-row:last-child { border-bottom: none; }
+
+  .cart-row .cname {
+    font-weight: 700;
+    font-size: .84rem;
+    color: var(--choc-dark);
+    line-height: 1.2;
+  }
+  .cart-row .cmeta {
+    font-size: .72rem;
+    color: var(--choc-warm);
+    margin-top: .1rem;
+    font-weight: 500;
+  }
+  .qty-controls {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    flex-shrink: 0;
+  }
+  .qty-btn {
+    width: 26px; height: 26px;
+    border-radius: 8px;
+    border: 1.5px solid #e0d4c5;
+    background: var(--choc-cream);
+    color: var(--choc-dark);
+    font-size: .85rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    line-height: 1;
+  }
+  .qty-btn:hover {
+    background: var(--choc-accent);
+    border-color: var(--choc-accent);
+    color: #fff;
+  }
+  .qty-display {
+    min-width: 22px;
+    text-align: center;
+    font-weight: 700;
+    font-size: .88rem;
+    color: var(--choc-dark);
+  }
+  .btn-remove-item {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: #fde8e8;
+    color: #c0392b;
+    font-size: .78rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+  }
+  .btn-remove-item:hover {
+    background: #c0392b;
+    color: #fff;
+  }
+
+  /* ── Totals panel ── */
+  .totals-panel {
+    background: linear-gradient(180deg, #fdf6ee 0%, #fff 100%);
+    border-top: 1.5px solid #ede5da;
+    padding: .9rem 1.1rem;
+  }
+
+  .totals-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .88rem;
+    padding: .2rem 0;
+    color: var(--choc-mid);
+    font-weight: 500;
+  }
+
+  /* discount block */
+  .discount-block {
+    background: linear-gradient(135deg, #fffbf0, #fff8e4);
+    border: 1.5px solid #fde68a;
+    border-radius: var(--radius-lg);
+    padding: .6rem .8rem;
+    margin: .55rem 0;
+  }
+  .discount-label {
+    font-size: .74rem;
+    font-weight: 700;
+    color: #92600a;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    margin-bottom: .4rem;
+  }
+  .discount-inputs {
+    display: flex;
+    gap: .4rem;
+  }
+  .discount-inputs input {
+    flex: 1;
+    border: 1.5px solid #e9d8a0;
+    border-radius: var(--radius-md);
+    padding: .38rem .6rem;
+    font-size: .85rem;
+    font-weight: 700;
+    text-align: right;
+    outline: none;
+    background: #fff;
+    transition: var(--transition);
+  }
+  .discount-inputs input:focus {
+    border-color: var(--choc-accent);
+    box-shadow: 0 0 0 3px rgba(232,150,60,.18);
+  }
+  .discount-inputs select {
+    border: 1.5px solid #e9d8a0;
+    border-radius: var(--radius-md);
+    padding: .38rem .45rem;
+    font-size: .82rem;
+    font-weight: 700;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 58px;
+  }
+
+  .grand-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: .45rem 0 .3rem;
+    border-top: 1.5px dashed #e0d4c5;
+    margin-top: .1rem;
+  }
+  .grand-total-label {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--choc-mid);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+  .grand-total-amount {
+    font-size: 1.55rem;
+    font-weight: 900;
+    color: var(--choc-espresso);
+    font-family: 'Inter', monospace;
+    letter-spacing: -1px;
+  }
+
+  /* cash received */
+  .cash-block {
+    background: linear-gradient(135deg, #f0f7ff, #e8f2ff);
+    border: 1.5px solid #93c5fd;
+    border-radius: var(--radius-lg);
+    padding: .6rem .85rem;
+    margin: .5rem 0;
+  }
+  .cash-label {
+    font-size: .72rem;
+    font-weight: 700;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    margin-bottom: .35rem;
+  }
+  .cash-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #1d4ed8;
+    text-align: right;
+    outline: none;
+    font-family: 'Inter', monospace;
+    padding: 0;
+  }
+  .cash-input::placeholder { color: #93c5fd; }
+
+  /* change display */
+  .change-block {
+    background: linear-gradient(135deg, #f0fdf4, #e8faf0);
+    border: 1.5px solid #6ee7b7;
+    border-radius: var(--radius-lg);
+    padding: .55rem .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .5rem;
+    transition: var(--transition);
+  }
+  .change-block.negative {
+    background: linear-gradient(135deg, #fff5f5, #fde8e8);
+    border-color: #fca5a5;
+  }
+  .change-label {
+    font-size: .72rem;
+    font-weight: 700;
+    color: #065f46;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .change-block.negative .change-label { color: #991b1b; }
+  #changeAmount {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #065f46;
+    font-family: 'Inter', monospace;
+    letter-spacing: -.5px;
+  }
+  #changeAmount.negative { color: #c0392b; }
+
+  .checkout-error {
+    color: #c0392b;
+    font-size: .76rem;
+    font-weight: 600;
+    min-height: 1.1rem;
+    padding: 0 .2rem;
+    margin-bottom: .2rem;
+  }
+
+  /* checkout button */
+  .btn-checkout {
+    width: 100%;
+    padding: .9rem;
+    border: none;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--choc-espresso) 0%, var(--choc-rich) 50%, var(--choc-mid) 100%);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: .5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 16px rgba(45,18,9,.35);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-checkout::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,.12) 50%, transparent 70%);
+    transform: skewX(-25deg) translateX(-100%);
+    transition: transform .6s ease;
+  }
+  .btn-checkout:hover::before { transform: skewX(-25deg) translateX(100%); }
+  .btn-checkout:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(45,18,9,.5);
+  }
+  .btn-checkout:active { transform: translateY(0); }
+
+  /* ════════════════════════════════════════════════
+     PRINT RECEIPT
+  ════════════════════════════════════════════════ */
+  #printReceipt { display: none; }
   @media print {
     body * { visibility: hidden; }
     #printReceipt, #printReceipt * { visibility: visible; }
     #printReceipt {
       display: block;
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 48mm !important;
       max-width: 48mm !important;
       font-family: 'Segoe UI', Arial, sans-serif !important;
@@ -86,35 +787,35 @@
       padding: 0mm !important;
       margin: 0mm !important;
     }
-    #printReceipt h4 { 
-      text-align: center; 
-      margin: 0 0 2px; 
-      font-size: 13px !important; 
+    #printReceipt h4 {
+      text-align: center;
+      margin: 0 0 2px;
+      font-size: 13px !important;
       font-weight: 900 !important;
     }
-    #printReceipt .sub { 
-      text-align: center; 
-      font-size: 10px !important; 
-      margin-bottom: 4px; 
+    #printReceipt .sub {
+      text-align: center;
+      font-size: 10px !important;
+      margin-bottom: 4px;
       font-weight: bold !important;
     }
-    #printReceipt table { 
-      width: 100% !important; 
-      border-collapse: collapse; 
+    #printReceipt table {
+      width: 100% !important;
+      border-collapse: collapse;
     }
-    #printReceipt td { 
-      padding: 2px 0; 
-      font-size: 10px !important; 
+    #printReceipt td {
+      padding: 2px 0;
+      font-size: 10px !important;
       font-weight: bold !important;
     }
-    #printReceipt hr { 
-      border: none !important; 
+    #printReceipt hr {
+      border: none !important;
       border-top: 2.5px dashed #000000 !important;
-      margin: 6px 0 !important; 
+      margin: 6px 0 !important;
       opacity: 1 !important;
     }
-    #printReceipt .totals td { 
-      font-weight: 900 !important; 
+    #printReceipt .totals td {
+      font-weight: 900 !important;
       font-size: 11px !important;
     }
     @page { margin: 0; size: 48mm auto; }
@@ -135,49 +836,116 @@
       margin-bottom: 6px !important;
     }
   }
+
+  /* ════════════════════════════════════════════════
+     ITEM COUNT BADGE on receipt header
+  ════════════════════════════════════════════════ */
+  .item-count-badge {
+    background: var(--choc-accent);
+    color: var(--choc-espresso);
+    font-size: .65rem;
+    font-weight: 900;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: .35rem;
+  }
+
+  /* ════════════════════════════════════════════════
+     TOAST NOTIFICATION
+  ════════════════════════════════════════════════ */
+  .toast-shelf {
+    position: fixed;
+    top: 70px; right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  .toast-chip {
+    background: var(--choc-espresso);
+    color: #fff;
+    border-radius: 12px;
+    padding: .55rem .9rem;
+    font-size: .8rem;
+    font-weight: 600;
+    box-shadow: 0 4px 18px rgba(26,10,4,.4);
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    animation: toastIn .2s ease, toastOut .3s ease 1.6s forwards;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  @keyframes toastIn  { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateX(12px); } }
+
+  /* ════════════════════════════════════════════════
+     CATEGORY PILLS (search area)
+  ════════════════════════════════════════════════ */
+  .no-scroll-bar::-webkit-scrollbar { display: none; }
+  .no-scroll-bar { scrollbar-width: none; }
 </style>
 </head>
 <body>
 
-<div class="app-shell">
-  <div class="main-col">
-    
-    <div class="topbar d-flex justify-content-between align-items-center">
-      <h4 class="mb-0"><i class="bi bi-cup-hot-fill"></i> Choco Paradise POS</h4>
-      <div class="d-flex align-items-center gap-3">
-        <a href="/admin/" target="_blank" class="btn btn-warning" style="font-weight: bold; border-radius: 20px; padding: 2px 12px; font-size: 12px; display: inline-flex; align-items: center; text-decoration: none;">
-          <i class="bi bi-gear-fill" style="margin-right: 4px;"></i> Admin
-        </a>
-        <span id="clock" class="small"></span>
-      </div>
-    </div>
+<!-- Toast shelf -->
+<div class="toast-shelf" id="toastShelf"></div>
 
-    <div class="search-wrap">
-      <div class="input-group mb-2">
-        <span class="input-group-text bg-dark text-white"><i class="bi bi-upc-scan"></i></span>
-        <input type="text" id="barcodeInput" class="form-control" placeholder="Scan barcode..." autocomplete="off" autofocus>
-        <span class="input-group-text" id="scanStatus"></span>
-      </div>
-      <input type="text" id="searchInput" class="form-control mb-2" placeholder="🔍 Search products...">
-      
-      <!-- ➕ අතින් භාණ්ඩ ඇතුළත් කිරීම (Custom Item Section) -->
-      <div class="card p-2 my-2" style="border: 1px dashed var(--choc-accent); background-color: #fffaf7;">
-        <div class="row g-2 align-items-center">
-          <div class="col-6 col-md-5">
-            <input type="text" id="customItemName" class="form-control form-control-sm" placeholder="භාණ්ඩයේ නම (Special Item)">
-          </div>
-          <div class="col-4 col-md-4">
-            <input type="number" id="customItemPrice" class="form-control form-control-sm" placeholder="මිල (Rs.)" min="0" step="0.01">
-          </div>
-          <div class="col-2 col-md-3">
-            <button type="button" class="btn btn-sm btn-choco w-100" onclick="addCustomItemToCart()">
-              <i class="bi bi-plus-circle"></i> <span>එකතු කරන්න</span>
-            </button>
-          </div>
+<div class="app-shell">
+  <!-- ══════════════════════════════════════════
+       MAIN COLUMN
+  ══════════════════════════════════════════ -->
+  <div class="main-col">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="brand-logo">
+        <div class="brand-icon">☕</div>
+        <div class="brand-text">
+          <h4>Choco Paradise</h4>
+          <span>Point of Sale</span>
         </div>
       </div>
+      <div class="topbar-right">
+        <a href="/admin/" target="_blank" class="btn-admin">
+          <i class="bi bi-gear-fill"></i> Admin
+        </a>
+        <div class="clock-badge" id="clock"></div>
+      </div>
     </div>
 
+    <!-- Search / Barcode / Custom Item zone -->
+    <div class="search-zone">
+      <div class="input-row">
+        <!-- Barcode scanner -->
+        <div class="field-group">
+          <i class="bi bi-upc-scan fi-icon"></i>
+          <input type="text" id="barcodeInput" placeholder="Scan barcode…" autocomplete="off" autofocus>
+          <span id="scanStatus"></span>
+        </div>
+        <!-- Product search -->
+        <div class="field-group">
+          <i class="bi bi-search fi-icon"></i>
+          <input type="text" id="searchInput" placeholder="Search products…">
+        </div>
+      </div>
+
+      <!-- Custom / Special item row -->
+      <div class="custom-item-card">
+        <i class="bi bi-plus-circle-dotted" style="color:var(--choc-accent);font-size:1.2rem;flex-shrink:0;"></i>
+        <input type="text" id="customItemName" class="name-input" placeholder="Special item name…">
+        <input type="number" id="customItemPrice" class="price-input" placeholder="Price (Rs.)" min="0" step="0.01">
+        <button class="btn-add-custom" onclick="addCustomItemToCart()">
+          <i class="bi bi-bag-plus-fill"></i> Add
+        </button>
+      </div>
+    </div>
+
+    <!-- Product grid -->
     <div class="product-area">
       <div class="product-grid" id="productGrid">
         {% for p in products %}
@@ -191,100 +959,126 @@
             {% if p.image %}
               <img src="{{ p.image.url }}" alt="{{ p.name }}">
             {% else %}
-              <i class="bi bi-image text-secondary fs-2"></i>
+              <i class="bi bi-image img-placeholder-icon"></i>
             {% endif %}
           </div>
-          <div class="body">
-            <div class="pname">{{ p.name }}</div>
-            <div class="d-flex justify-content-between align-items-center mt-1">
+          <div class="card-body-inner">
+            <div class="pname" title="{{ p.name }}">{{ p.name }}</div>
+            <div class="price-row">
               <span class="pprice">Rs. {{ p.selling_price }}</span>
-              <span class="badge bg-light text-dark stock-badge">{{ p.stock }} left</span>
+              <span class="stock-pill {% if p.stock <= 0 %}out{% elif p.stock <= 5 %}low{% endif %}">
+                {% if p.stock <= 0 %}Out{% else %}{{ p.stock }}{% endif %}
+              </span>
             </div>
           </div>
         </div>
         {% empty %}
-        <p class="text-muted">No products available.</p>
+        <div class="empty-grid">
+          <i class="bi bi-box-seam"></i>
+          <p>No products available.</p>
+        </div>
         {% endfor %}
       </div>
     </div>
-  </div>
+  </div><!-- /main-col -->
 
+  <!-- ══════════════════════════════════════════
+       SIDEBAR — ORDER PANEL
+  ══════════════════════════════════════════ -->
   <div class="sidebar-receipt">
-    <div class="receipt-header d-flex justify-content-between align-items-center">
-      <div><i class="bi bi-receipt"></i> Current Order</div>
-      <button class="btn btn-sm btn-outline-light" id="clearCartBtn"><i class="bi bi-trash"></i></button>
+    <!-- Header -->
+    <div class="receipt-header">
+      <div class="receipt-header-left">
+        <div class="rh-icon"><i class="bi bi-receipt-cutoff"></i></div>
+        <div>
+          <h6>Current Order <span class="item-count-badge" id="itemCount">0</span></h6>
+          <small>Tap a product to add</small>
+        </div>
+      </div>
+      <button class="btn-clear-cart" id="clearCartBtn" title="Clear cart">
+        <i class="bi bi-trash3"></i> Clear
+      </button>
     </div>
 
+    <!-- Cart items -->
     <div class="cart-items" id="cartItems">
       <div class="empty-cart" id="emptyCartMsg">
-        <i class="bi bi-cart-x fs-1"></i>
+        <i class="bi bi-cart3"></i>
         <p>Cart is empty</p>
+        <small style="color:var(--choc-muted);font-size:.75rem;">Add items from the left panel</small>
       </div>
     </div>
 
-    <div class="totals-box">
-      <!-- Frontend Sidebar එකේ පෙන්වීමට මඟ පෙන්වීම් තබා ඇත -->
-      <div class="row-line"><span>Sub Total</span><span>Rs. <span id="subTotalAmount">0.00</span></span></div>
-      
-      <!-- 📉 Discount Input Fields -->
-      <div class="row g-2 align-items-center my-1" style="background: #fff3cd; padding: 6px; border-radius: 6px;">
-        <div class="col-4">
-          <span style="font-size: 13px; font-weight: bold; color: #856404;"><i class="bi bi-tag-fill"></i> වට්ටම්:</span>
+    <!-- Totals panel -->
+    <div class="totals-panel">
+
+      <!-- Sub total -->
+      <div class="totals-line">
+        <span>Sub Total</span>
+        <span>Rs. <strong id="subTotalAmount">0.00</strong></span>
+      </div>
+
+      <!-- Discount -->
+      <div class="discount-block">
+        <div class="discount-label">
+          <i class="bi bi-tag-fill"></i> Discount
         </div>
-        <div class="col-8">
-          <div class="input-group input-group-sm">
-            <input type="number" id="discountInput" class="form-control form-control-sm text-end fw-bold" placeholder="0.00" value="0" min="0">
-            <select id="discountType" class="form-select form-select-sm fw-bold" style="max-width: 65px;">
-              <option value="cash">Rs.</option>
-              <option value="percent">%</option>
-            </select>
-          </div>
+        <div class="discount-inputs">
+          <input type="number" id="discountInput" placeholder="0.00" value="0" min="0">
+          <select id="discountType">
+            <option value="cash">Rs.</option>
+            <option value="percent">%</option>
+          </select>
         </div>
       </div>
 
-      <div class="row-line grand-total"><span>Total</span><span>Rs. <span id="totalAmount">0.00</span></span></div>
-
-      <hr class="my-2">
-
-      <div class="form-group mb-2" style="background: #f8f9fa; padding: 8px; border-radius: 8px; border-left: 5px solid #007bff;">
-        <label style="font-size: 13px; font-weight: bold; color: #2c3e50; display: block; margin-bottom: 3px;">
-          💰 දුන් මුදල (Cash Received):
-        </label>
-        <input type="number" id="cashReceived" class="form-control" style="font-size: 22px; font-weight: bold; color: #007bff; text-align: right; padding: 2px 10px;" placeholder="0.00">
+      <!-- Grand total -->
+      <div class="grand-total-row">
+        <span class="grand-total-label">Total</span>
+        <span class="grand-total-amount">Rs. <span id="totalAmount">0.00</span></span>
       </div>
 
-      <div class="balance-amount-box" style="background: #e8f5e9; padding: 10px; border-radius: 8px; border-left: 5px solid #2e7d32; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 13px; font-weight: bold; color: #1b5e20;">
-          ↩️ ඉතිරි මුදල (Change):
-        </span>
-        <span id="changeAmount" style="font-size: 24px; font-weight: 900; color: #2e7d32; font-family: monospace;">
-            Rs. 0.00
-        </span>
+      <!-- Cash received -->
+      <div class="cash-block">
+        <div class="cash-label">
+          <i class="bi bi-cash-coin"></i> Cash Received
+        </div>
+        <input type="number" id="cashReceived" class="cash-input" placeholder="0.00">
       </div>
 
-      <div id="checkoutError" class="text-danger small mt-1"></div>
+      <!-- Change -->
+      <div class="change-block" id="changeBlock">
+        <div class="change-label">
+          <i class="bi bi-arrow-return-left"></i> Change
+        </div>
+        <span id="changeAmount">Rs. 0.00</span>
+      </div>
 
-      <button class="btn btn-choco w-100 mt-2 py-2" id="checkoutBtn">
-        <i class="bi bi-printer-fill"></i> Checkout & Print
+      <div class="checkout-error" id="checkoutError"></div>
+
+      <button class="btn-checkout" id="checkoutBtn">
+        <i class="bi bi-printer-fill"></i> Checkout &amp; Print
       </button>
     </div>
   </div>
 </div>
 
-<!-- 🖨️ Thermal Printer Receipt Layout (සිංහලෙන් වෙනස් කරන ලදි) -->
+<!-- ══════════════════════════════════════════
+     THERMAL PRINTER RECEIPT (hidden)
+══════════════════════════════════════════ -->
 <div id="printReceipt">
   <div class="receipt-logo-wrap">
-    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAYGBgYHBgcICAcKCwoLCg8ODAwODxYQERAREBYiFRkVFRkVIh4kHhweJB42KiYmKjY+NDI0PkxERExfWl98fKcBBgYGBgcGBwgIBwoLCgsKDw4MDA4PFhAREBEQFiIVGRUVGRUiHiQeHB4kHjYqJiYqNj40MjQ+TERETF9aX3x8p//CABEIBDgEOAMBIgACEQEDEQH/xAAzAAEAAgMBAQAAAAAAAAAAAAAAAQYCAwUEBwEBAAMBAQEAAAAAAAAAAAAAAAECAwQFBv/aAAwDAQACEAMQAAACtQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGvZWYeDm+WY0sFr+Zdia3pEzU5iHTEiK1E9rxVNTa3+2hj6JNC7Fs7K8PtmkiQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACo27wxNAznHPqww252z+gZ5ZWw+Z42Ljxrc+n4PfOfj+f/SaFFvPGmadGzHCJZRjM5vVv6805/R9uU1jq8HkIvPkpfmi1i3VDONPo+359bJz6otQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw1y4omi2TrEhNWvYgEnl9SFJ5P0zWn5p6PoWZVLB7SAkAiRW6j9S4EKds1zXo9efn9WWvasdB3aY3px/ffH0omYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGEM3O5模樣" class="receipt-logo" alt="Logo">
+    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAYGBgYHBgcICAcKCwoLCg8ODAwODxYQERAREBYiFRkVFRkVIh4kHhweJB42KiYmKjY+NDI0PkxERExfWl98fKcBBgYGBgcGBwgIBwoLCgsKDw4MDA4PFhAREBEQFiIVGRUVGRUiHiQeHB4kHjYqJiYqNj40MjQ+TERETF9aX3x8p//CABEIBDgEOAMBIgACEQEDEQH/xAAzAAEAAgMBAQAAAAAAAAAAAAAAAQYCAwUEBwEBAAMBAQEAAAAAAAAAAAAAAAECAwQFBv/aAAwDAQACEAMQAAACtQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGvZWYeDm+WY0sFr+Zdia3pEzU5iHTEiK1E9rxVNTa3+2hj6JNC7Fs7K8PtmkiQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACo27wxNAznHPqww252z+gZ5ZWw+Z42Ljxrc+n4PfOfj+f/SaFFvPGmadGzHCJZRjM5vVv6805/R9uU1jq8HkIvPkpfmi1i3VDONPo+359bJz6otQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw1y4omi2TrEhNWvYgEnl9SFJ5P0zWn5p6PoWZVLB7SAkAiRW6j9S4EKds1zXo9efn9WWvasdB3aY3px/ffH0omYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGEM3O5" class="receipt-logo" alt="Logo">
   </div>
 
   <h4>CHOCO PARADISE</h4>
-  
+
   <div class="sub contact-info">
     Ratmetiya Rd,<br>
     Rikillagaskada<br>
-    Tel: 072 3378848 
+    Tel: 072 3378848
   </div>
-  
+
   <div class="sub" id="pr-meta"></div>
   <hr>
   <table>
@@ -315,6 +1109,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+/* ══════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════ */
 function getCookie(name){
   let value = null;
   document.cookie.split(';').forEach(c=>{
@@ -325,29 +1122,48 @@ function getCookie(name){
 }
 const CSRF_TOKEN = getCookie('csrftoken');
 
-let cart = {};
-
 function fmt(n){ return Number(n).toFixed(2); }
+
+/* ── Toast ── */
+function showToast(msg, icon='bi-check-circle-fill', color='#e8963c'){
+  const shelf = document.getElementById('toastShelf');
+  const t = document.createElement('div');
+  t.className = 'toast-chip';
+  t.innerHTML = `<i class="bi ${icon}" style="color:${color};"></i>${msg}`;
+  shelf.appendChild(t);
+  setTimeout(()=> t.remove(), 2000);
+}
+
+/* ══════════════════════════════════════════════
+   CART STATE
+══════════════════════════════════════════════ */
+let cart = {};
 
 function renderCart(){
   const container = document.getElementById('cartItems');
   const keys = Object.keys(cart);
+
   if(keys.length === 0){
-    container.innerHTML = `<div class="empty-cart" id="emptyCartMsg"><i class="bi bi-cart-x fs-1"></i><p>Cart is empty</p></div>`;
+    container.innerHTML = `
+      <div class="empty-cart" id="emptyCartMsg">
+        <i class="bi bi-cart3"></i>
+        <p>Cart is empty</p>
+        <small style="color:var(--choc-muted);font-size:.75rem;">Add items from the left panel</small>
+      </div>`;
   } else {
     container.innerHTML = keys.map(id=>{
       const item = cart[id];
       return `
         <div class="cart-row" data-id="${id}">
-          <div>
-            <div class="cname">${item.name} ${item.is_custom ? '<span class="badge bg-secondary">Custom</span>' : ''}</div>
-            <div class="cmeta">Rs. ${fmt(item.price)} x ${item.qty} = Rs. ${fmt(item.price*item.qty)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="cname">${item.name}${item.is_custom ? ' <span style="font-size:.6rem;background:#e9ecef;color:#555;border-radius:4px;padding:1px 5px;vertical-align:middle;">Custom</span>' : ''}</div>
+            <div class="cmeta">Rs. ${fmt(item.price)} × ${item.qty} = <strong>Rs. ${fmt(item.price*item.qty)}</strong></div>
           </div>
-          <div class="qty-controls d-flex align-items-center gap-1">
-            <button class="btn btn-sm btn-outline-secondary" onclick="changeQty('${id}',-1)">-</button>
-            <span>${item.qty}</span>
-            <button class="btn btn-sm btn-outline-secondary" onclick="changeQty('${id}',1)">+</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="removeItem('${id}')"><i class="bi bi-x"></i></button>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty('${id}',-1)">−</button>
+            <span class="qty-display">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${id}',1)">+</button>
+            <button class="btn-remove-item" onclick="removeItem('${id}')"><i class="bi bi-x"></i></button>
           </div>
         </div>`;
     }).join('');
@@ -355,52 +1171,50 @@ function renderCart(){
 
   let subTotal = 0, count = 0;
   keys.forEach(id=>{ subTotal += cart[id].price * cart[id].qty; count += cart[id].qty; });
-  
+
   const elCount = document.getElementById('itemCount');
   if(elCount) elCount.innerText = count;
-  
+
   document.getElementById('subTotalAmount').innerText = fmt(subTotal);
-  
   calcFinalTotal();
 }
 
-function addToCart(id, name, price, stock, isCustom = false){
+function addToCart(id, name, price, stock, isCustom=false){
   const key = isCustom ? "custom_" + Date.now() : id;
   if(!isCustom && stock <= 0) return;
 
-  if(!cart[key]) {
-    cart[key] = { 
+  if(!cart[key]){
+    cart[key] = {
       id: isCustom ? null : parseInt(id),
-      name: name, 
-      price: parseFloat(price), 
-      qty: 0, 
+      name, price: parseFloat(price), qty: 0,
       stock: isCustom ? 9999 : parseInt(stock),
-      is_custom: isCustom 
+      is_custom: isCustom
     };
   }
 
-  if(cart[key].qty < cart[key].stock){ 
-    cart[key].qty += 1; 
-  } else if (!isCustom) {
-    alert("පවතින තොග ප්‍රමාණය ඉක්මවා යා නොහැක!");
+  if(cart[key].qty < cart[key].stock){
+    cart[key].qty += 1;
+    showToast(`${name} added`, 'bi-bag-check-fill', '#4ade80');
+  } else if(!isCustom){
+    showToast('Stock limit reached!', 'bi-exclamation-triangle-fill', '#facc15');
   }
   renderCart();
 }
 
-function addCustomItemToCart() {
-  const nameInput = document.getElementById('customItemName');
+function addCustomItemToCart(){
+  const nameInput  = document.getElementById('customItemName');
   const priceInput = document.getElementById('customItemPrice');
-  const name = nameInput.value.trim();
+  const name  = nameInput.value.trim();
   const price = parseFloat(priceInput.value);
 
-  if (name === "" || isNaN(price) || price <= 0) {
-    alert("කරුණාකර භාණ්ඩයේ නම සහ නිවැරදි මිලක් ඇතුළත් කරන්න!");
+  if(!name || isNaN(price) || price <= 0){
+    showToast('Enter a valid name & price', 'bi-exclamation-circle-fill', '#f87171');
     return;
   }
 
   addToCart(null, name, price, 9999, true);
-  nameInput.value = "";
-  priceInput.value = "";
+  nameInput.value  = '';
+  priceInput.value = '';
   document.getElementById('barcodeInput').focus();
 }
 
@@ -418,35 +1232,32 @@ function getSubTotal(){
   return Object.values(cart).reduce((s,i)=> s + i.price*i.qty, 0);
 }
 
-function calcFinalTotal() {
-  const subTotal = getSubTotal();
+/* ══════════════════════════════════════════════
+   TOTALS
+══════════════════════════════════════════════ */
+function calcFinalTotal(){
+  const subTotal  = getSubTotal();
   const discValue = parseFloat(document.getElementById('discountInput').value) || 0;
-  const discType = document.getElementById('discountType').value;
-  
-  let discountAmount = 0;
-  if (discType === 'percent') {
-    discountAmount = (subTotal * discValue) / 100;
-  } else {
-    discountAmount = discValue;
-  }
+  const discType  = document.getElementById('discountType').value;
 
-  if (discountAmount > subTotal) discountAmount = subTotal;
+  let discAmt = discType === 'percent' ? (subTotal * discValue / 100) : discValue;
+  if(discAmt > subTotal) discAmt = subTotal;
 
-  const finalTotal = subTotal - discountAmount;
+  const finalTotal = subTotal - discAmt;
   document.getElementById('totalAmount').innerText = fmt(finalTotal);
-  
   calcChange();
 }
 
 function calcChange(){
-  const total = parseFloat(document.getElementById('totalAmount').innerText) || 0;
-  const cash = parseFloat(document.getElementById('cashReceived').value) || 0;
+  const total  = parseFloat(document.getElementById('totalAmount').innerText) || 0;
+  const cash   = parseFloat(document.getElementById('cashReceived').value)    || 0;
   const change = cash - total;
-  const el = document.getElementById('changeAmount');
+  const el     = document.getElementById('changeAmount');
+  const block  = document.getElementById('changeBlock');
   if(el){
     el.innerText = 'Rs. ' + fmt(Math.abs(change));
-    el.classList.remove('positive','negative');
-    el.classList.add(change < 0 ? 'negative' : 'positive');
+    el.className = change < 0 ? 'negative' : '';
+    block.className = 'change-block' + (change < 0 ? ' negative' : '');
   }
 }
 
@@ -454,28 +1265,36 @@ document.getElementById('cashReceived').addEventListener('input', calcChange);
 document.getElementById('discountInput').addEventListener('input', calcFinalTotal);
 document.getElementById('discountType').addEventListener('change', calcFinalTotal);
 
+/* ── Clear cart ── */
 document.getElementById('clearCartBtn').addEventListener('click', ()=>{
-  if(confirm("සම්පූර්ණ කරත්තයම හිස් කිරීමට අවශ්‍යද?")) {
+  if(confirm('Clear the entire cart?')){
     cart = {};
     document.getElementById('cashReceived').value = '';
     document.getElementById('discountInput').value = '0';
     renderCart();
     const el = document.getElementById('changeAmount');
-    if(el) el.innerText = 'Rs. 0.00';
+    if(el){ el.innerText = 'Rs. 0.00'; el.className = ''; }
+    document.getElementById('changeBlock').className = 'change-block';
   }
 });
 
+/* ══════════════════════════════════════════════
+   PRODUCT CLICK
+══════════════════════════════════════════════ */
 document.querySelectorAll('.product-card').forEach(card=>{
   card.addEventListener('click', ()=>{
     addToCart(card.dataset.id, card.dataset.name, card.dataset.price, card.dataset.stock, false);
   });
 });
 
+/* ══════════════════════════════════════════════
+   BARCODE SCANNER
+══════════════════════════════════════════════ */
 const barcodeInput = document.getElementById('barcodeInput');
-const scanStatus = document.getElementById('scanStatus');
+const scanStatus   = document.getElementById('scanStatus');
 
-function flashScanStatus(icon, cls){
-  scanStatus.innerHTML = `<i class="bi ${icon} ${cls}"></i>`;
+function flashScanStatus(icon, color){
+  scanStatus.innerHTML = `<i class="bi ${icon}" style="color:${color};"></i>`;
   setTimeout(()=>{ scanStatus.innerHTML = ''; }, 1200);
 }
 
@@ -486,30 +1305,29 @@ async function handleBarcodeScan(code){
   const localCard = document.querySelector(`.product-card[data-barcode="${CSS.escape(code)}"]`);
   if(localCard){
     if(localCard.classList.contains('out-of-stock')){
-      flashScanStatus('bi-x-circle-fill', 'text-danger');
+      flashScanStatus('bi-x-circle-fill', '#ef4444');
+      showToast('Out of stock', 'bi-x-circle-fill', '#ef4444');
       return;
     }
     addToCart(localCard.dataset.id, localCard.dataset.name, localCard.dataset.price, localCard.dataset.stock, false);
-    flashScanStatus('bi-check-circle-fill', 'text-success');
+    flashScanStatus('bi-check-circle-fill', '#4ade80');
     return;
   }
 
   try{
-    const res = await fetch(`{% url 'barcode_lookup_api' %}?code=${encodeURIComponent(code)}`);
+    const res  = await fetch(`{% url 'barcode_lookup_api' %}?code=${encodeURIComponent(code)}`);
     const data = await res.json();
     if(data.success){
       const p = data.product;
-      if(p.stock <= 0){
-        flashScanStatus('bi-x-circle-fill', 'text-danger');
-        return;
-      }
+      if(p.stock <= 0){ flashScanStatus('bi-x-circle-fill', '#ef4444'); return; }
       addToCart(p.id, p.name, p.price, p.stock, false);
-      flashScanStatus('bi-check-circle-fill', 'text-success');
+      flashScanStatus('bi-check-circle-fill', '#4ade80');
     } else {
-      flashScanStatus('bi-exclamation-triangle-fill', 'text-warning');
+      flashScanStatus('bi-exclamation-triangle-fill', '#facc15');
+      showToast('Barcode not found', 'bi-exclamation-triangle-fill', '#facc15');
     }
-  }catch(err){
-    flashScanStatus('bi-exclamation-triangle-fill', 'text-warning');
+  } catch(err){
+    flashScanStatus('bi-exclamation-triangle-fill', '#facc15');
   }
 }
 
@@ -521,15 +1339,17 @@ barcodeInput.addEventListener('keydown', (e)=>{
   }
 });
 
+/* ── Auto-refocus barcode ── */
 function refocusBarcodeInput(){
-  const activeId = document.activeElement.id;
-  if(activeId !== 'cashReceived' && activeId !== 'searchInput' && activeId !== 'customItemName' && activeId !== 'customItemPrice' && activeId !== 'discountInput'){
+  const id = document.activeElement.id;
+  if(!['cashReceived','searchInput','customItemName','customItemPrice','discountInput'].includes(id)){
     barcodeInput.focus();
   }
 }
 document.addEventListener('click', refocusBarcodeInput);
 window.addEventListener('load', ()=> barcodeInput.focus());
 
+/* ── Search filter ── */
 document.getElementById('searchInput').addEventListener('input', (e)=>{
   const q = e.target.value.toLowerCase();
   document.querySelectorAll('.product-card').forEach(card=>{
@@ -537,135 +1357,156 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
   });
 });
 
-document.getElementById('checkoutBtn').addEventListener('click', async ()=>{
+/* ══════════════════════════════════════════════
+   CHECKOUT — INSTANT PRINT (zero server wait)
+   Step 1: validate locally → build receipt → window.print() RIGHT NOW
+   Step 2: POST to server in background to save the order record
+   Step 3: if server replies with real order#, update pr-meta silently
+══════════════════════════════════════════════ */
+document.getElementById('checkoutBtn').addEventListener('click', ()=>{
   const errBox = document.getElementById('checkoutError');
   errBox.innerText = '';
 
-  const total = parseFloat(document.getElementById('totalAmount').innerText) || 0;
-  const cash = parseFloat(document.getElementById('cashReceived').value) || 0;
-  const discValue = parseFloat(document.getElementById('discountInput').value) || 0;
-  const discType = document.getElementById('discountType').value;
+  const total     = parseFloat(document.getElementById('totalAmount').innerText) || 0;
+  const cash      = parseFloat(document.getElementById('cashReceived').value)    || 0;
+  const discValue = parseFloat(document.getElementById('discountInput').value)   || 0;
+  const discType  = document.getElementById('discountType').value;
 
   if(Object.keys(cart).length === 0){ errBox.innerText = 'Cart is empty.'; return; }
   if(cash < total){ errBox.innerText = 'Cash received is less than total amount.'; return; }
 
-  const payload = {
-    cart: Object.values(cart).map(item=>({
-      id: item.id,
-      qty: item.qty,
-      is_custom: item.is_custom,
-      name: item.name,
-      price: item.price
-    })),
-    cash_received: cash,
-    discount_value: discValue,
-    discount_type: discType
-  };
+  /* ── Compute everything locally ── */
+  const subTotal   = getSubTotal();
+  let   discAmt    = discType === 'percent' ? (subTotal * discValue / 100) : discValue;
+  if(discAmt > subTotal) discAmt = subTotal;
+  const changeGiven  = cash - total;
+  const now          = new Date();
+  const localStamp   = now.toLocaleString('en-GB');
+  const tempOrderNum = '#' + now.getTime().toString().slice(-6);
 
-  try{
-    const res = await fetch("{% url 'checkout_api' %}", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': CSRF_TOKEN
-      },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
+  /* ── Snapshot cart before clearing ── */
+  const cartSnapshot = JSON.parse(JSON.stringify(cart));
 
-    if(!data.success){ errBox.innerText = data.error || 'Checkout failed.'; return; }
+  /* ── Build & fire print IMMEDIATELY ── */
+  const itemsHTML = Object.values(cartSnapshot).map(it=>`
+    <tr><td colspan="2">${it.name}</td></tr>
+    <tr>
+      <td>${it.qty} x ${fmt(it.price)}</td>
+      <td style="text-align:right;">${fmt(it.price * it.qty)}</td>
+    </tr>`).join('');
 
-    printReceipt(data, payload);
+  document.getElementById('pr-meta').innerText         = `${tempOrderNum} | ${localStamp}`;
+  document.getElementById('pr-items').innerHTML         = itemsHTML;
+  document.getElementById('pr-subtotal').innerText      = 'Rs. ' + fmt(subTotal);
+  document.getElementById('pr-cash').innerText          = 'Rs. ' + fmt(cash);
+  document.getElementById('pr-change').innerText        = 'Rs. ' + fmt(changeGiven);
 
-    Object.values(cart).forEach(item => {
-      if (!item.is_custom) {
-        const card = document.querySelector(`.product-card[data-id="${item.id}"]`);
-        if (card) {
-          let oldStock = parseInt(card.dataset.stock) || 0;
-          let soldQty = item.qty;
-          let newStock = oldStock - soldQty;
-          card.dataset.stock = newStock;
-          const badge = card.querySelector('.stock-badge');
-          if (badge) badge.innerText = `${newStock} left`;
-          if (newStock <= 0) card.classList.add('out-of-stock');
-        }
-      }
-    });
-
-    cart = {};
-    document.getElementById('cashReceived').value = '';
-    document.getElementById('discountInput').value = '0';
-    if(document.getElementById('changeAmount')) document.getElementById('changeAmount').innerText = 'Rs. 0.00';
-    renderCart();
-
-  }catch(err){
-    errBox.innerText = 'Network error. Please try again.';
+  const discRow = document.getElementById('pr-discount-row');
+  if(discAmt > 0){
+    document.getElementById('pr-discount').innerText = '-Rs. ' + fmt(discAmt);
+    discRow.style.display = '';
+  } else {
+    discRow.style.display = 'none';
   }
+
+  window.print();   /* ← fires the print dialog with ZERO network delay */
+
+  /* ── Update stock badges on UI ── */
+  Object.values(cartSnapshot).forEach(item=>{
+    if(!item.is_custom){
+      const card = document.querySelector(`.product-card[data-id="${item.id}"]`);
+      if(card){
+        const newStock = Math.max(0, (parseInt(card.dataset.stock) || 0) - item.qty);
+        card.dataset.stock = newStock;
+        const badge = card.querySelector('.stock-pill');
+        if(badge){
+          badge.innerText   = newStock <= 0 ? 'Out' : newStock;
+          badge.className   = 'stock-pill' + (newStock <= 0 ? ' out' : newStock <= 5 ? ' low' : '');
+        }
+        if(newStock <= 0) card.classList.add('out-of-stock');
+      }
+    }
+  });
+
+  /* ── Reset cart & UI ── */
+  cart = {};
+  document.getElementById('cashReceived').value  = '';
+  document.getElementById('discountInput').value = '0';
+  const chEl = document.getElementById('changeAmount');
+  if(chEl){ chEl.innerText = 'Rs. 0.00'; chEl.className = ''; }
+  document.getElementById('changeBlock').className = 'change-block';
+  renderCart();
+  showToast('Order complete!', 'bi-check-circle-fill', '#4ade80');
+
+  /* ── Save to server in background (non-blocking) ── */
+  fetch("{% url 'checkout_api' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+    body: JSON.stringify({
+      cart: Object.values(cartSnapshot).map(i=>({
+        id: i.id, qty: i.qty, is_custom: i.is_custom, name: i.name, price: i.price
+      })),
+      cash_received:  cash,
+      discount_value: discValue,
+      discount_type:  discType
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if(!data.success){
+      showToast('⚠ Save error: ' + (data.error||'check records'), 'bi-exclamation-triangle-fill', '#f87171');
+      return;
+    }
+    /* Update pr-meta with real order number silently (receipt already printed) */
+    if(data.order_number){
+      const metaEl = document.getElementById('pr-meta');
+      if(metaEl) metaEl.innerText = `#${data.order_number} | ${data.timestamp || localStamp}`;
+    }
+  })
+  .catch(()=>{
+    showToast('⚠ Network error — order may not be saved', 'bi-wifi-off', '#f87171');
+  });
 });
 
-// ⚡ රිසිට් එක සිංහලෙන් සහ Net Total රහිතව මුද්‍රණය කරන Function එක
-function printReceipt(data, payload){
-  document.getElementById('pr-meta').innerText = `#${data.order_number} | ${data.timestamp}`;
-  document.getElementById('pr-items').innerHTML = data.items.map(it=>`
-    <tr>
-      <td colspan="2">${it.name}</td>
-    </tr>
-    <tr>
-      <td>${it.qty} x ${fmt(it.unit_price)}</td>
-      <td style="text-align:right;">${fmt(it.subtotal)}</td>
-    </tr>`).join('');
-  
-  // views.py එකෙන් ලැබෙන gross_total සහ discount_amount අගයන් භාවිතා කිරීම
-  const grossTotal = data.gross_total || getSubTotal();
-  const discountAmount = data.discount_amount !== undefined ? data.discount_amount : 0;
-
-  document.getElementById('pr-subtotal').innerText = 'Rs. ' + fmt(grossTotal);
-  
-  const discRow = document.getElementById('pr-discount-row');
-  if (discountAmount > 0) {
-    document.getElementById('pr-discount').innerText = '-Rs. ' + fmt(discountAmount);
-    discRow.style.display = ''; // 👈 මෙතන style.style display එක නිවැරදි කළා මල්ලි
-  } else {
-    discRow.style.display = 'none';   // නැත්නම් සඟවයි
-  }
-
-  document.getElementById('pr-cash').innerText = 'Rs. ' + fmt(data.cash_received);
-  document.getElementById('pr-change').innerText = 'Rs. ' + fmt(data.change_given);
-
-  window.print();
-}
-
+/* ══════════════════════════════════════════════
+   CLOCK
+══════════════════════════════════════════════ */
 function updateClock(){
-  const elClock = document.getElementById('clock');
-  if(elClock) elClock.innerText = new Date().toLocaleString('en-GB');
+  const el = document.getElementById('clock');
+  if(el) el.innerText = new Date().toLocaleString('en-GB');
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-renderCart();
-
-async function updateLiveStockRealtime() {
-  try {
-    const res = await fetch("/api/live-stock/?_nocache=" + new Date().getTime());
+/* ══════════════════════════════════════════════
+   LIVE STOCK POLLING
+══════════════════════════════════════════════ */
+async function updateLiveStockRealtime(){
+  try{
+    const res  = await fetch("/api/live-stock/?_nocache=" + Date.now());
     const data = await res.json();
-    
-    if (data.success && data.stocks) {
-      data.stocks.forEach(p => {
+    if(data.success && data.stocks){
+      data.stocks.forEach(p=>{
         const card = document.querySelector(`.product-card[data-id="${p.id}"]`);
-        if (card) {
+        if(card){
           card.dataset.stock = p.stock;
-          const badge = card.querySelector('.stock-badge') || card.querySelector('.badge') || card.querySelector('span');
-          if (badge) badge.innerText = `${p.stock} left`;
-          if (parseInt(p.stock) <= 0) card.classList.add('out-of-stock');
+          const badge = card.querySelector('.stock-pill');
+          if(badge){
+            badge.innerText = parseInt(p.stock) <= 0 ? 'Out' : p.stock;
+            badge.className = 'stock-pill' + (parseInt(p.stock) <= 0 ? ' out' : parseInt(p.stock) <= 5 ? ' low' : '');
+          }
+          if(parseInt(p.stock) <= 0) card.classList.add('out-of-stock');
           else card.classList.remove('out-of-stock');
         }
       });
     }
-  } catch (err) {
+  } catch(err){
     console.log("Live stock polling failed:", err);
   }
 }
 setInterval(updateLiveStockRealtime, 1000);
+
+renderCart();
 </script>
 </body>
 </html>

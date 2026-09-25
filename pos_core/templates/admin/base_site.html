@@ -1,174 +1,728 @@
 {% extends "admin/base.html" %}
+{% load i18n %}
 
-{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% block title %}{{ title }} | Choco Paradise Admin{% endblock %}
 
 {% block branding %}
-<div id="site-name">
-    <a href="{% url 'admin:index' %}" style="font-family: 'Segoe UI', Arial, sans-serif; font-weight: bold; color: #fff !important;">
-        🍫 Choco Paradise Admin
-    </a>
+<div id="site-name" style="display:flex;align-items:center;gap:.7rem;">
+  <div style="width:36px;height:36px;background:linear-gradient(135deg,#e8963c,#f5c842);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;box-shadow:0 3px 10px rgba(232,150,60,.45);flex-shrink:0;">☕</div>
+  <a href="{% url 'admin:index' %}" style="font-family:'Playfair Display',serif;font-weight:900;color:#fff!important;text-decoration:none!important;font-size:1.1rem;letter-spacing:.2px;line-height:1;">
+    Choco Paradise
+    <span style="display:block;font-family:'Inter',sans-serif;font-size:.6rem;font-weight:500;color:#c4a882;letter-spacing:2px;text-transform:uppercase;">Admin Panel</span>
+  </a>
 </div>
 {% endblock %}
 
 {% block nav-global %}
-    <a href="/" target="_blank" class="pos-nav-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        Go to POS Page
-    </a>
+  <a href="/" target="_blank" class="cp-nav-pos-btn">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:5px;"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+    Open POS
+  </a>
 {% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
-    /* =======================================================
-       ✨ ULTIMATE HIGH-CONTRAST LIGHT THEME (BYPASS ALL DARK BLOCKS)
-       ======================================================= */
-    
-    /* 1. ප්‍රධාන පසුබිම */
-    body, #content {
-        background: #fdfdfd !important;
-        font-family: 'Segoe UI', -apple-system, sans-serif !important;
-        color: #000000 !important;
-    }
+/* ═══════════════════════════════════════════════════════
+   CHOCO PARADISE — Admin Design System
+   Brand tokens aligned with POS interface
+═══════════════════════════════════════════════════════ */
+:root {
+  --cp-espresso: #1a0a04;
+  --cp-dark:     #2d1209;
+  --cp-rich:     #4a1e0e;
+  --cp-mid:      #7a4428;
+  --cp-warm:     #a0603a;
+  --cp-accent:   #e8963c;
+  --cp-gold:     #f5c842;
+  --cp-cream:    #fdf6ee;
+  --cp-light:    #f5ece2;
+  --cp-muted:    #c4a882;
+  --cp-border:   #e8ddd1;
+  --cp-white:    #ffffff;
+  --cp-text:     #1a0a04;
+  --cp-text2:    #5a3a2a;
+  --cp-blue:     #1d6bb8;
+  --cp-radius:   12px;
+  --cp-shadow:   0 2px 16px rgba(45,18,9,.09);
+  --cp-shadow-lg:0 6px 28px rgba(45,18,9,.15);
+  --cp-trans:    .18s cubic-bezier(.4,0,.2,1);
+}
 
-    /* Top Navigation Bar */
-    #header {
-        background: #2b1810 !important;
-        border-bottom: 3px solid #d98e4a !important;
-        padding: 12px 20px !important;
-    }
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
 
-    .pos-nav-btn {
-        background: #d98e4a !important; color: #fff !important;
-        padding: 6px 14px !important; border-radius: 20px !important;
-        font-weight: bold !important; text-decoration: none !important;
-        font-size: 12px !important; display: inline-flex !important; align-items: center !important;
-    }
+body, html {
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif !important;
+  background: #f2ebe2 !important;
+  color: var(--cp-text) !important;
+}
 
-    .breadcrumbs { background: #3a2218 !important; color: #fff !important; padding: 10px 20px !important; font-size: 12px !important; }
-    .breadcrumbs a { color: #fcc99b !important; }
+/* ═══════════════════════════════════════════════════════
+   TOP HEADER
+═══════════════════════════════════════════════════════ */
+#header {
+  background: linear-gradient(135deg, var(--cp-espresso) 0%, var(--cp-rich) 60%, var(--cp-mid) 100%) !important;
+  border-bottom: none !important;
+  padding: .9rem 1.5rem !important;
+  box-shadow: 0 2px 18px rgba(26,10,4,.45) !important;
+  position: relative !important;
+}
+#header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent, var(--cp-accent), var(--cp-gold), var(--cp-accent), transparent);
+}
 
-    /* Left Sidebar Menu */
-    div.modules h2, .module h2, .section h2 {
-        background: #4a2f24 !important; color: #fff !important;
-        font-size: 13px !important; font-weight: 700 !important; padding: 10px 15px !important;
-    }
-    .module { background: #fff !important; border: 1px solid #dee2e6 !important; border-radius: 8px !important; overflow: hidden; margin-bottom: 20px !important; }
+#user-tools {
+  font-size: .78rem !important;
+  color: rgba(255,255,255,.75) !important;
+}
+#user-tools a {
+  color: var(--cp-muted) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: color var(--cp-trans) !important;
+}
+#user-tools a:hover { color: var(--cp-gold) !important; }
 
-    /* =======================================================
-       📊 THE MAIN CHANGELIST PANEL
-       ======================================================= */
-    #changelist {
-        background: #ffffff !important;
-        border: 1px solid #ced4da !important;
-        border-radius: 10px !important;
-        padding: 20px !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-    }
+/* POS button */
+.cp-nav-pos-btn {
+  background: linear-gradient(135deg, var(--cp-accent), var(--cp-gold)) !important;
+  color: var(--cp-dark) !important;
+  font-weight: 700 !important;
+  font-size: .75rem !important;
+  padding: .38rem .95rem !important;
+  border-radius: 20px !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  letter-spacing: .3px !important;
+  box-shadow: 0 3px 10px rgba(232,150,60,.45) !important;
+  transition: transform var(--cp-trans), box-shadow var(--cp-trans) !important;
+}
+.cp-nav-pos-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(232,150,60,.6) !important;
+  color: var(--cp-dark) !important;
+}
 
-    /* 🔍 SEARCH BAR (කළු පාට බලෙන්ම ඉවත් කර 100% සුදු කරන ලදී) */
-    #changelist-search { 
-        background: #ffffff !important; 
-        border: none !important; 
-        padding: 15px !important;
-        border-radius: 8px !important;
-        margin-bottom: 15px !important;
-        border: 1px solid #dee2e6 !important;
-    }
-    
-    #changelist-search form input[type="text"], 
-    #changelist-search input[type="text"],
-    #searchbar {
-        background-color: #ffffff !important; 
-        color: #000000 !important; 
-        border: 2px solid #0056b3 !important; /* කැපී පෙනෙන නිල් බෝඩර් එකක් */
-        border-radius: 6px !important;
-        padding: 8px 15px !important; 
-        font-size: 15px !important; 
-        font-weight: 700 !important;
-        width: 400px !important;
-        display: inline-block !important;
-    }
-    
-    #changelist-search input[type="submit"] {
-        background: #0056b3 !important; 
-        color: #fff !important;
-        border-radius: 6px !important; 
-        padding: 9px 20px !important; 
-        border: none !important; 
-        font-weight: bold !important;
-        font-size: 14px !important;
-        cursor: pointer !important;
-        margin-left: 10px !important;
-    }
+/* ═══════════════════════════════════════════════════════
+   BREADCRUMBS
+═══════════════════════════════════════════════════════ */
+.breadcrumbs {
+  background: var(--cp-dark) !important;
+  color: var(--cp-muted) !important;
+  padding: .5rem 1.5rem !important;
+  font-size: .75rem !important;
+  font-weight: 500 !important;
+  letter-spacing: .2px !important;
+  border-bottom: 1px solid rgba(255,255,255,.06) !important;
+}
+.breadcrumbs a {
+  color: var(--cp-muted) !important;
+  text-decoration: none !important;
+  transition: color var(--cp-trans) !important;
+}
+.breadcrumbs a:hover { color: var(--cp-accent) !important; }
+.breadcrumbs > * + *::before { color: rgba(255,255,255,.3) !important; }
 
-    /* 🎬 ACTIONS BAR */
-    .actions {
-        background: #f8f9fa !important; 
-        border: 1px solid #ced4da !important;
-        border-radius: 6px !important; 
-        padding: 12px !important; 
-        margin-bottom: 15px !important; 
-        color: #000000 !important;
-        font-weight: 600 !important;
-    }
-    .actions select {
-        border: 2px solid #ced4da !important;
-        padding: 6px !important;
-        border-radius: 4px !important;
-        font-weight: bold !important;
-        color: #000 !important;
-        background: #fff !important;
-    }
+/* ═══════════════════════════════════════════════════════
+   MAIN CONTENT AREA
+═══════════════════════════════════════════════════════ */
+#content {
+  background: transparent !important;
+  padding: 1.4rem 1.6rem !important;
+}
 
-    /* 🟢 TABLE HEADERS */
-    #result_list th {
-        background: #0056b3 !important; /* Headers ටික ලස්සන තද නිල් පාටක් කළා */
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 13px !important;
-        padding: 14px 10px !important;
-        text-align: center !important;
-    }
-    #result_list th .text a, #result_list th a { color: #ffffff !important; }
+#content-main {
+  width: 100% !important;
+}
 
-    /* 🟢 TABLE ROWS (100% පිරිසිදු සුදු පසුබිම සහ තද කළු අකුරු) */
-    #result_list tbody tr, 
-    #result_list tr.row1, 
-    #result_list tr.row2 { 
-        background: #ffffff !important; 
-    }
-    
-    #result_list tr:hover { 
-        background: #f1f7fe !important; /* Hover කරද්දී ලස්සන නිල් පාටක් */
-    }
+h1 {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 1.55rem !important;
+  font-weight: 900 !important;
+  color: var(--cp-dark) !important;
+  margin-bottom: 1.2rem !important;
+  letter-spacing: -.3px !important;
+}
 
-    #result_list td {
-        color: #000000 !important; /* උපරිම තද කළු අකුරු */
-        font-weight: 700 !important; /* හොඳින් කියවන්න පුළුවන් වෙන්න බෝල්ඩ් */
-        font-size: 14px !important;
-        padding: 15px 10px !important;
-        border-bottom: 2px solid #dee2e6 !important; /* පේළි වෙන් කරලා පේන බෝඩර්ස් */
-        text-align: center !important;
-        background: #ffffff !important;
-    }
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR MODULES (left nav on dashboard)
+═══════════════════════════════════════════════════════ */
+#content-related, .sidebar {
+  background: transparent !important;
+}
 
-    /* භාණ්ඩයේ නම පෙන්වන ලින්ක් එක */
-    #result_list td.field-name a, #result_list td a {
-        color: #0056b3 !important; 
-        font-weight: 800 !important;
-        text-decoration: underline !important;
-    }
+.module, div.module {
+  background: var(--cp-white) !important;
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: var(--cp-radius) !important;
+  overflow: hidden !important;
+  margin-bottom: 1rem !important;
+  box-shadow: var(--cp-shadow) !important;
+}
 
-    /* 6. Filter Panel */
-    #changelist-filter { background: #ffffff !important; border-left: 2px solid #ced4da !important; padding: 15px !important; }
-    #changelist-filter h2 { background: #3a2218 !important; color: #fff !important; border-radius: 4px !important; padding: 6px 10px !important; font-size: 12px !important; }
-    #changelist-filter h3 { color: #000 !important; font-weight: 700 !important; font-size: 13px !important; }
-    #changelist-filter ul li.selected a { border-left: 4px solid #0056b3 !important; padding-left: 6px !important; color: #0056b3 !important; font-weight: bold !important; }
-    #changelist-filter a { color: #495057 !important; font-size: 13px; font-weight: 600; }
+.module h2, div.module h2,
+.module > h2:first-child {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .8px !important;
+  text-transform: uppercase !important;
+  padding: .65rem 1rem !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
 
-    /* Green Add Button */
-    .object-tools a.addlink { background: #28a745 !important; color: #fff !important; border-radius: 6px !important; font-weight: bold !important; padding: 10px 20px !important; }
-    .object-tools a.addlink:hover { background: #218838 !important; }
+.module table {
+  background: var(--cp-white) !important;
+  width: 100% !important;
+}
+
+.module th {
+  background: var(--cp-cream) !important;
+  color: var(--cp-text2) !important;
+  font-weight: 700 !important;
+  font-size: .75rem !important;
+  letter-spacing: .5px !important;
+  text-transform: uppercase !important;
+  padding: .5rem .9rem !important;
+  border-bottom: 1.5px solid var(--cp-border) !important;
+}
+
+.module td {
+  color: var(--cp-text) !important;
+  font-size: .82rem !important;
+  font-weight: 500 !important;
+  padding: .5rem .9rem !important;
+  border-bottom: 1px solid #f0e8de !important;
+  background: var(--cp-white) !important;
+}
+.module td a {
+  color: var(--cp-rich) !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+.module td a:hover { color: var(--cp-accent) !important; }
+
+/* dashboard app list */
+#content-main .module caption {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: .78rem !important;
+  letter-spacing: .8px !important;
+  text-transform: uppercase !important;
+  padding: .65rem 1rem !important;
+  text-align: left !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CHANGELIST / DATA TABLE
+═══════════════════════════════════════════════════════ */
+#changelist {
+  background: var(--cp-white) !important;
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: var(--cp-radius) !important;
+  box-shadow: var(--cp-shadow) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+/* Search bar */
+#changelist-search {
+  background: var(--cp-cream) !important;
+  border: none !important;
+  border-bottom: 1.5px solid var(--cp-border) !important;
+  padding: .9rem 1.2rem !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: .6rem !important;
+}
+#changelist-search form {
+  display: flex !important;
+  align-items: center !important;
+  gap: .5rem !important;
+}
+#searchbar,
+#changelist-search input[type="text"] {
+  background: var(--cp-white) !important;
+  color: var(--cp-text) !important;
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: 8px !important;
+  padding: .5rem 1rem !important;
+  font-size: .86rem !important;
+  font-weight: 500 !important;
+  width: 320px !important;
+  outline: none !important;
+  transition: border-color var(--cp-trans), box-shadow var(--cp-trans) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+#searchbar:focus,
+#changelist-search input[type="text"]:focus {
+  border-color: var(--cp-accent) !important;
+  box-shadow: 0 0 0 3px rgba(232,150,60,.18) !important;
+}
+#changelist-search input[type="submit"] {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: .5rem 1.1rem !important;
+  font-size: .82rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: transform var(--cp-trans), box-shadow var(--cp-trans) !important;
+}
+#changelist-search input[type="submit"]:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(74,30,14,.35) !important;
+}
+
+/* Actions bar */
+.actions {
+  background: var(--cp-cream) !important;
+  border: none !important;
+  border-bottom: 1.5px solid var(--cp-border) !important;
+  border-radius: 0 !important;
+  padding: .65rem 1.2rem !important;
+  color: var(--cp-text2) !important;
+  font-size: .82rem !important;
+  font-weight: 600 !important;
+}
+.actions select {
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: 7px !important;
+  padding: .35rem .6rem !important;
+  font-size: .82rem !important;
+  font-weight: 600 !important;
+  color: var(--cp-text) !important;
+  background: var(--cp-white) !important;
+  cursor: pointer !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.actions button, .actions input[type="button"] {
+  background: var(--cp-rich) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 7px !important;
+  padding: .35rem .85rem !important;
+  font-size: .8rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* Table headers */
+#result_list thead th,
+#result_list th {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  font-size: .73rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .6px !important;
+  text-transform: uppercase !important;
+  padding: .8rem 1rem !important;
+  text-align: left !important;
+  border: none !important;
+  white-space: nowrap !important;
+}
+#result_list th a,
+#result_list thead th a {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+#result_list th.sorted {
+  background: linear-gradient(135deg, var(--cp-dark), var(--cp-rich)) !important;
+}
+#result_list th .text span.small { color: rgba(255,255,255,.7) !important; }
+
+/* Checkbox column */
+#result_list th:first-child,
+#result_list td:first-child {
+  padding-left: 1.2rem !important;
+}
+
+/* Table rows */
+#result_list tbody tr {
+  background: var(--cp-white) !important;
+  transition: background var(--cp-trans) !important;
+  border-bottom: 1px solid #f0e8de !important;
+}
+#result_list tbody tr:last-child { border-bottom: none !important; }
+#result_list tbody tr.row1,
+#result_list tbody tr.row2 {
+  background: var(--cp-white) !important;
+}
+#result_list tbody tr:hover {
+  background: #fdf3e8 !important;
+}
+
+#result_list td {
+  color: var(--cp-text) !important;
+  font-size: .84rem !important;
+  font-weight: 500 !important;
+  padding: .9rem 1rem !important;
+  border: none !important;
+  vertical-align: middle !important;
+  background: transparent !important;
+}
+#result_list td a {
+  color: var(--cp-rich) !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  transition: color var(--cp-trans) !important;
+}
+#result_list td a:hover { color: var(--cp-accent) !important; }
+
+/* checkboxes */
+#result_list input[type="checkbox"] {
+  accent-color: var(--cp-accent) !important;
+  width: 15px !important;
+  height: 15px !important;
+  cursor: pointer !important;
+}
+
+/* Pagination */
+.paginator {
+  background: var(--cp-cream) !important;
+  border-top: 1.5px solid var(--cp-border) !important;
+  padding: .65rem 1.2rem !important;
+  font-size: .8rem !important;
+  color: var(--cp-text2) !important;
+  font-weight: 500 !important;
+}
+.paginator a {
+  color: var(--cp-rich) !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  padding: .25rem .55rem !important;
+  border-radius: 6px !important;
+  transition: background var(--cp-trans) !important;
+}
+.paginator a:hover {
+  background: var(--cp-light) !important;
+}
+.paginator .this-page {
+  background: var(--cp-accent) !important;
+  color: var(--cp-dark) !important;
+  font-weight: 800 !important;
+  padding: .25rem .55rem !important;
+  border-radius: 6px !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FILTER SIDEBAR
+═══════════════════════════════════════════════════════ */
+#changelist-filter {
+  background: var(--cp-white) !important;
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: var(--cp-radius) !important;
+  box-shadow: var(--cp-shadow) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+#changelist-filter h2 {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  font-size: .73rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .8px !important;
+  text-transform: uppercase !important;
+  padding: .7rem 1rem !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+#changelist-filter h3 {
+  color: var(--cp-text2) !important;
+  font-size: .75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .5px !important;
+  text-transform: uppercase !important;
+  padding: .65rem 1rem .3rem !important;
+  margin: 0 !important;
+  border-top: 1px solid var(--cp-border) !important;
+}
+#changelist-filter h3:first-of-type { border-top: none !important; }
+
+#changelist-filter ul {
+  padding: 0 !important;
+  margin: 0 0 .5rem !important;
+  list-style: none !important;
+}
+#changelist-filter ul li {
+  margin: 0 !important;
+}
+#changelist-filter ul li a {
+  display: block !important;
+  padding: .38rem 1rem !important;
+  color: var(--cp-text2) !important;
+  font-size: .81rem !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: background var(--cp-trans), color var(--cp-trans) !important;
+  border-left: 3px solid transparent !important;
+}
+#changelist-filter ul li a:hover {
+  background: var(--cp-cream) !important;
+  color: var(--cp-accent) !important;
+  border-left-color: var(--cp-accent) !important;
+}
+#changelist-filter ul li.selected a {
+  background: #fdf3e8 !important;
+  color: var(--cp-rich) !important;
+  font-weight: 700 !important;
+  border-left-color: var(--cp-accent) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   OBJECT TOOLS (Add button)
+═══════════════════════════════════════════════════════ */
+.object-tools {
+  margin-bottom: 1rem !important;
+}
+.object-tools li { list-style: none !important; }
+.object-tools a,
+.object-tools a.addlink {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: .8rem !important;
+  padding: .5rem 1.1rem !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .35rem !important;
+  letter-spacing: .3px !important;
+  box-shadow: 0 3px 10px rgba(74,30,14,.3) !important;
+  transition: transform var(--cp-trans), box-shadow var(--cp-trans) !important;
+  border: none !important;
+}
+.object-tools a:hover,
+.object-tools a.addlink:hover {
+  background: linear-gradient(135deg, var(--cp-mid), var(--cp-warm)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(74,30,14,.4) !important;
+  color: #fff !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FORM PAGES (add / change object)
+═══════════════════════════════════════════════════════ */
+.form-row {
+  border-bottom: 1px solid var(--cp-border) !important;
+  padding: .75rem 1rem !important;
+  background: var(--cp-white) !important;
+}
+.form-row:last-child { border-bottom: none !important; }
+
+label {
+  color: var(--cp-text2) !important;
+  font-weight: 700 !important;
+  font-size: .82rem !important;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: 8px !important;
+  padding: .5rem .85rem !important;
+  font-size: .86rem !important;
+  font-family: 'Inter', sans-serif !important;
+  color: var(--cp-text) !important;
+  background: var(--cp-white) !important;
+  transition: border-color var(--cp-trans), box-shadow var(--cp-trans) !important;
+  outline: none !important;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--cp-accent) !important;
+  box-shadow: 0 0 0 3px rgba(232,150,60,.18) !important;
+}
+
+.fieldset.collapse { border: 1.5px solid var(--cp-border) !important; border-radius: var(--cp-radius) !important; }
+
+fieldset.module {
+  background: var(--cp-white) !important;
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: var(--cp-radius) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  margin-bottom: 1rem !important;
+}
+fieldset.module h2 {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .6px !important;
+  text-transform: uppercase !important;
+  padding: .65rem 1rem !important;
+  margin: 0 !important;
+}
+
+/* Submit row */
+.submit-row {
+  background: var(--cp-cream) !important;
+  border-top: 1.5px solid var(--cp-border) !important;
+  border-radius: 0 0 var(--cp-radius) var(--cp-radius) !important;
+  padding: .85rem 1.2rem !important;
+  gap: .6rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+.submit-row input[type="submit"],
+.submit-row button {
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: .84rem !important;
+  padding: .55rem 1.2rem !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: transform var(--cp-trans), box-shadow var(--cp-trans) !important;
+}
+.submit-row input[name="_save"] {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  box-shadow: 0 3px 10px rgba(74,30,14,.3) !important;
+}
+.submit-row input[name="_save"]:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(74,30,14,.4) !important;
+}
+.submit-row input[name="_addanother"],
+.submit-row input[name="_continue"] {
+  background: var(--cp-white) !important;
+  color: var(--cp-rich) !important;
+  border: 1.5px solid var(--cp-border) !important;
+}
+.submit-row input[name="_addanother"]:hover,
+.submit-row input[name="_continue"]:hover {
+  border-color: var(--cp-accent) !important;
+  background: var(--cp-cream) !important;
+  color: var(--cp-dark) !important;
+}
+.submit-row p.deletelink-box a {
+  color: #c0392b !important;
+  font-weight: 700 !important;
+  font-size: .8rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   INLINE TABLES (OrderItem)
+═══════════════════════════════════════════════════════ */
+.inline-group {
+  background: var(--cp-white) !important;
+  border: 1.5px solid var(--cp-border) !important;
+  border-radius: var(--cp-radius) !important;
+  overflow: hidden !important;
+  margin-top: 1rem !important;
+  box-shadow: var(--cp-shadow) !important;
+}
+.inline-group h2 {
+  background: linear-gradient(135deg, var(--cp-rich), var(--cp-mid)) !important;
+  color: #fff !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .6px !important;
+  text-transform: uppercase !important;
+  padding: .65rem 1rem !important;
+  margin: 0 !important;
+}
+.inline-related thead th {
+  background: var(--cp-cream) !important;
+  color: var(--cp-text2) !important;
+  font-size: .73rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .5px !important;
+  text-transform: uppercase !important;
+  padding: .6rem .9rem !important;
+  border-bottom: 1.5px solid var(--cp-border) !important;
+}
+.inline-related tbody tr {
+  background: var(--cp-white) !important;
+  border-bottom: 1px solid #f0e8de !important;
+}
+.inline-related tbody tr:hover { background: #fdf3e8 !important; }
+.inline-related td {
+  padding: .65rem .9rem !important;
+  font-size: .83rem !important;
+  color: var(--cp-text) !important;
+  font-weight: 500 !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MESSAGES / ALERTS
+═══════════════════════════════════════════════════════ */
+.messagelist {
+  padding: 0 !important;
+  margin-bottom: 1.2rem !important;
+  list-style: none !important;
+}
+.messagelist li {
+  border-radius: 10px !important;
+  padding: .75rem 1.1rem !important;
+  font-size: .84rem !important;
+  font-weight: 600 !important;
+  margin-bottom: .5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: .5rem !important;
+}
+.messagelist li.success {
+  background: #f0fdf4 !important;
+  color: #065f46 !important;
+  border: 1.5px solid #6ee7b7 !important;
+}
+.messagelist li.warning {
+  background: #fffbeb !important;
+  color: #92400e !important;
+  border: 1.5px solid #fcd34d !important;
+}
+.messagelist li.error {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1.5px solid #fca5a5 !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DELETE CONFIRMATION
+═══════════════════════════════════════════════════════ */
+.delete-confirmation {
+  background: var(--cp-white) !important;
+  border: 1.5px solid #fca5a5 !important;
+  border-radius: var(--cp-radius) !important;
+  padding: 1.5rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MISC
+═══════════════════════════════════════════════════════ */
+a:focus { outline: 2px solid var(--cp-accent) !important; outline-offset: 2px !important; }
+.help { color: var(--cp-muted) !important; font-size: .75rem !important; }
+.errornote { background: #fef2f2 !important; border: 1.5px solid #fca5a5 !important; border-radius: 8px !important; color: #991b1b !important; padding: .65rem 1rem !important; }
+ul.errorlist { color: #c0392b !important; font-weight: 600 !important; font-size: .8rem !important; }
+
+/* Inline count badge */
+.tabular.inline-related .original p { font-size: .78rem !important; font-weight: 700 !important; color: var(--cp-mid) !important; }
+
+/* Hide Django's default coloring */
+body.change-list #changelist tr.row1 td,
+body.change-list #changelist tr.row2 td { background: transparent !important; }
 </style>
 {% endblock %}
